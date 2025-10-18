@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    android:background="@color/white"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group
+        android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/profile"
+            android:title="Profile"
+            android:icon="@drawable/img_15"/>
+
+        <item
+            android:id="@+id/notification"
+            android:title="Notification"
+            android:icon="@drawable/img_16"/>
+
+        <item
+            android:id="@+id/session_history"
+            android:title="Session History"
+            android:icon="@drawable/img_17"/>
+
+        <item
+            android:id="@+id/AI"
+            android:title="AI Coahing Chat"
+            android:icon="@drawable/img_18"/>
+
+        <item
+            android:id="@+id/settings"
+            android:title="Settings"
+            android:icon="@drawable/img_19"/>
+
+        <item android:title="">
+            <menu>
+                <item
+                    android:id="@+id/signout"
+                    android:icon="@drawable/img_20"
+                    android:title="Sign Out" />
+            </menu>
+        </item>
+
+    </group>
+
+</menu>

@@ -1,0 +1,22 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.FYP" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Customize your light theme here. -->
+        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    </style>
+
+    <style name="Theme.FYP" parent="Base.Theme.FYP" />
+
+    <style name="CustomNavigationView" parent="Widget.Material3.NavigationView">
+        <item name="dividerInsetStart">0dp</item>
+        <item name="dividerInsetEnd">0dp</item>
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.App.NavigationView</item>
+        <item name="itemIconTint">@color/words_blue</item>
+        <item name="itemTextColor">@color/words_blue</item>
+    </style>
+
+    <style name="ShapeAppearance.App.NavigationView" parent="">
+        <item name="strokeColor">@android:color/white</item> <!-- This sets the line color to white -->
+        <item name="strokeWidth">1dp</item>
+    </style>
+</resources>
