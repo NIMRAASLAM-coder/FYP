@@ -97,7 +97,7 @@ class SessionHistoryActivity : AppCompatActivity() {
 
         val dateView = TextView(this).apply {
             text = date
-            setTextColor(resources.getColor(R.color.blue, theme))
+            setTextColor(resources.getColor(R.color.light_blue, theme))
             textSize = 13f
         }
 
