@@ -114,7 +114,7 @@ class SignUp : AppCompatActivity() {
                 } else {
                     // Registration failed (e.g., email already in use, weak password, etc.)
                     val errorMessage = task.exception?.message ?: "Registration failed."
-                    Toast.makeText(this, "Registration Failed: $errorMessage", Toast.LENGTH_LONG).show()
+//                    Toast.makeText(this, "Registration Failed: $errorMessage", Toast.LENGTH_LONG).show()
                     // The user stays on the SignUp screen to see the error and try again.
                 }
             }
