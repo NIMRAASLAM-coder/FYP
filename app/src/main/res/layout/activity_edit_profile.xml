@@ -3,164 +3,262 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#E4F3FF"
+    android:background="@color/words_blue"
     android:fillViewport="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp"
-        android:gravity="center_horizontal">
+        android:layout_height="wrap_content">
 
-        <!-- Header -->
-        <RelativeLayout
+        <!-- Header Section (Blue Background) -->
+        <LinearLayout
+            android:id="@+id/headerSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:paddingVertical="12dp">
+            android:orientation="vertical"
+            android:background="@color/words_blue"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="32dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-            <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Edit Profile"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#000000"
-                android:layout_centerHorizontal="true" />
-
+            <!-- Close Button -->
             <ImageView
                 android:id="@+id/btn_close"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_alignParentEnd="true"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="end"
                 android:src="@drawable/ic_close_red"
-                android:contentDescription="Close" />
-        </RelativeLayout>
+                android:contentDescription="Close"
+                app:tint="@color/red" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#BDBDBD"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Profile Image -->
-        <LinearLayout
-            android:orientation="vertical"
-            android:gravity="center"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
-
-            <ImageView
-                android:id="@+id/profile_image"
-                android:layout_width="90dp"
-                android:layout_height="90dp"
-                android:src="@drawable/ic_person"
-                android:background="@drawable/profile_circle_bg"
-                android:padding="8dp" />
+            <!-- Title -->
+            <TextView
+                android:id="@+id/pageTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Edit Profile"
+                android:textColor="@color/white"
+                android:textSize="40sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-black" />
 
             <TextView
-                android:id="@+id/change_photo"
-                android:text="Change Profile photo"
-                android:textColor="#1565C0"
-                android:textStyle="bold"
-                android:textSize="14sp"
-                android:layout_marginTop="4dp"
+                android:id="@+id/pageSubtitle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Update your information"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:alpha="0.9" />
+
         </LinearLayout>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#BDBDBD"
-            android:layout_marginBottom="12dp" />
-
-        <!-- Name -->
-        <TextView
-            android:text="Name"
-            android:textSize="14sp"
-            android:textColor="#000"
-            android:layout_marginBottom="4dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-
-        <EditText
-            android:id="@+id/et_name"
+        <!-- Form Section (White Background with Rounded Top) -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/formSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter your name"
-            android:padding="12dp"
-            android:background="@drawable/bg_input" />
+            android:background="@drawable/rounded_top_corners_shape"
+            android:paddingTop="32dp"
+            android:paddingBottom="32dp"
+            app:layout_constraintTop_toBottomOf="@id/headerSection"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Email -->
-        <TextView
-            android:text="Email"
-            android:textSize="14sp"
-            android:textColor="#000"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            <!-- Form Fields Container -->
+            <LinearLayout
+                android:id="@+id/formFieldsContainer"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintWidth_percent="0.85">
 
-        <EditText
-            android:id="@+id/et_email"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Enter your email"
-            android:inputType="textEmailAddress"
-            android:padding="12dp"
-            android:background="@drawable/bg_input" />
+                <!-- Profile Image Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:layout_marginBottom="24dp">
 
-        <!-- DOB -->
-        <TextView
-            android:text="Date of Birth"
-            android:textSize="14sp"
-            android:textColor="#000"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+                    <!-- Profile Image with Border -->
+                    <RelativeLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content">
 
-        <EditText
-            android:id="@+id/et_dob"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Select date of birth"
-            android:padding="12dp"
-            android:focusable="false"
-            android:background="@drawable/bg_input" />
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            app:cardCornerRadius="50dp"
+                            app:cardElevation="4dp"
+                            app:cardBackgroundColor="@color/background_blue">
 
-        <!-- Experience Level -->
-        <TextView
-            android:text="Cricket Experience Level"
-            android:textSize="14sp"
-            android:textColor="#000"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+                            <ImageView
+                                android:id="@+id/profile_image"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:padding="20dp"
+                                android:src="@drawable/ic_person"
+                                android:scaleType="centerInside"
+                                app:tint="@color/words_blue" />
+                        </androidx.cardview.widget.CardView>
 
-        <Spinner
-            android:id="@+id/spinner_experience"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_input"
-            android:padding="8dp" />
+                        <!-- Camera Icon Overlay -->
+                        <androidx.cardview.widget.CardView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            app:cardBackgroundColor="@color/words_blue"
+                            app:cardCornerRadius="16dp"
+                            app:cardElevation="4dp">
 
-        <!-- Save Button -->
-        <Button
-            android:id="@+id/btn_save"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Save And Continue"
-            android:textAllCaps="false"
-            android:background="@drawable/bg_primary_button"
-            android:layout_marginTop="24dp"
-            android:padding="12dp"
-            android:textSize="16sp"
-            android:fontFamily="sans-serif-medium" />
+                            <ImageView
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_gravity="center"
+                                android:src="@drawable/ic_camera"
+                                app:tint="@color/white" />
+                        </androidx.cardview.widget.CardView>
+                    </RelativeLayout>
 
-    </LinearLayout>
+                    <TextView
+                        android:id="@+id/change_photo"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Change Profile Photo"
+                        android:textColor="@color/words_blue"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <!-- Name Field -->
+                <TextView
+                    android:id="@+id/nameLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Full Name"
+                    android:textColor="@color/words_blue"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_edittext"
+                    android:backgroundTint="@color/white"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:inputType="textPersonName"
+                    android:textSize="15sp"
+                    android:hint="Enter your full name"
+                    android:textColor="@color/words_blue"
+                    android:textColorHint="#80000000" />
+
+                <!-- Email Field -->
+                <TextView
+                    android:id="@+id/emailLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Email"
+                    android:textColor="@color/words_blue"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_edittext"
+                    android:backgroundTint="@color/white"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:inputType="textEmailAddress"
+                    android:textSize="15sp"
+                    android:hint="Enter your email"
+                    android:textColor="@color/words_blue"
+                    android:textColorHint="#80000000" />
+
+                <!-- Date of Birth Field -->
+                <TextView
+                    android:id="@+id/dobLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Date of Birth"
+                    android:textColor="@color/words_blue"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_dob"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_edittext"
+                    android:backgroundTint="@color/white"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:textSize="15sp"
+                    android:hint="Select date of birth"
+                    android:textColor="@color/words_blue"
+                    android:textColorHint="#80000000" />
+
+                <!-- Experience Level Field -->
+                <TextView
+                    android:id="@+id/experienceLabel"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:text="Cricket Experience Level"
+                    android:textColor="@color/words_blue"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <Spinner
+                    android:id="@+id/spinner_experience"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/button_edittext"
+                    android:backgroundTint="@color/white"
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp" />
+
+                <!-- Save Button -->
+                <Button
+                    android:id="@+id/btn_save"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="32dp"
+                    android:backgroundTint="@color/words_blue"
+                    android:text="Save And Continue"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white"
+                    android:elevation="2dp"
+                    app:cornerRadius="28dp" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </ScrollView>
