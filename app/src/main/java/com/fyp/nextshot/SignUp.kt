@@ -7,18 +7,21 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.activity.enableEdgeToEdge
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class SignUp : AppCompatActivity() {
 
     private var isPasswordVisible = false
+    private lateinit var auth: FirebaseAuth
+    private lateinit var db: FirebaseFirestore
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_sign_up)
 
         // Apply window insets for edge-to-edge display
@@ -27,6 +30,10 @@ class SignUp : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        // Initialize Firebase instances
+        auth = FirebaseAuth.getInstance()
+        db = FirebaseFirestore.getInstance()
 
         // Initialize views with updated IDs
         val signInTab = findViewById<TextView>(R.id.signInTab)
@@ -55,16 +62,9 @@ class SignUp : AppCompatActivity() {
 
             // Validation
             if (validateInputs(name, email, password)) {
-                // TODO: Add your signup logic here (e.g., Firebase Authentication)
-                // For now, navigate to Dashboard
-                val intent = Intent(this, Dashboard::class.java)
-                // Optional: Pass user data
-                intent.putExtra("USER_NAME", name)
-                intent.putExtra("USER_EMAIL", email)
-                startActivity(intent)
-                // Optional: finish() to prevent going back to sign up
-                // finish()
+                registerUser(name, email, password)
             }
+            // IMPORTANT: If you had any manual navigation to SignIn here, it's removed.
         }
 
         // Password Visibility Toggle
@@ -74,21 +74,78 @@ class SignUp : AppCompatActivity() {
     }
 
     /**
-     * Navigates to Sign In activity
+     * Handles user registration using Firebase Auth and stores data in Firestore.
+     */
+    private fun registerUser(name: String, email: String, password: String) {
+        // Step 1: Create user with Email and Password
+        auth.createUserWithEmailAndPassword(email, password)
+            .addOnCompleteListener(this) { task ->
+                if (task.isSuccessful) {
+                    val firebaseUser = auth.currentUser
+                    val userId = firebaseUser?.uid
+
+                    if (userId != null) {
+                        // Step 2: Store additional user data (Name, Email) in Firestore
+                        val user = hashMapOf(
+                            "uid" to userId,
+                            "fullName" to name,
+                            "email" to email,
+                            "createdAt" to com.google.firebase.Timestamp.now()
+                        )
+
+                        // Create a collection named "users" and add a document with the UID
+                        db.collection("users").document(userId)
+                            .set(user)
+                            .addOnSuccessListener {
+                                // Both Auth and Firestore successful
+                                Toast.makeText(this, "Account Created! Welcome to NextShot.", Toast.LENGTH_LONG).show()
+                                navigateToDashboard()
+                            }
+                            .addOnFailureListener { e ->
+                                // Firestore failed, but user is created in Auth. Handle cleanup:
+                                Toast.makeText(this, "Failed to save user data. Please contact support. Error: ${e.message}", Toast.LENGTH_LONG).show()
+                                firebaseUser.delete()
+                                // The user stays on the sign-up screen to see the error.
+                            }
+                    } else {
+                        Toast.makeText(this, "Registration successful, but user ID is null.", Toast.LENGTH_LONG).show()
+                    }
+
+                } else {
+                    // Registration failed (e.g., email already in use, weak password, etc.)
+                    val errorMessage = task.exception?.message ?: "Registration failed."
+                    Toast.makeText(this, "Registration Failed: $errorMessage", Toast.LENGTH_LONG).show()
+                    // The user stays on the SignUp screen to see the error and try again.
+                }
+            }
+    }
+
+    /**
+     * Navigates to Sign In activity and finishes the current one.
      */
     private fun navigateToSignIn() {
         val intent = Intent(this, SignIn::class.java)
         startActivity(intent)
-        // Optional: Add animation
-        // overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
+        finish()
+    }
+
+    /**
+     * Navigates to Dashboard activity and clears the back stack.
+     */
+    private fun navigateToDashboard() {
+        val intent = Intent(this, Dashboard::class.java)
+        // Clear all previous activities and start a new task
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
     }
 
     /**
      * Validates all input fields
      */
     private fun validateInputs(name: String, email: String, password: String): Boolean {
+        // ... (Keep your existing validation logic)
         var isValid = true
-
         val nameInput = findViewById<EditText>(R.id.nameInput)
         val emailInput = findViewById<EditText>(R.id.emailInput)
         val passwordInput = findViewById<EditText>(R.id.passwordInput)
@@ -118,20 +175,13 @@ class SignUp : AppCompatActivity() {
         if (password.isEmpty()) {
             passwordInput.error = "Password is required"
             isValid = false
-        } else if (password.length < 8) {
-            passwordInput.error = "Password must be at least 8 characters"
-            isValid = false
-        } else if (!password.matches(Regex(".*[A-Z].*"))) {
-            passwordInput.error = "Password must contain at least one uppercase letter"
+        } else if (password.length < 4) {
+            passwordInput.error = "Password must be at least 4 characters"
             isValid = false
         } else if (!password.matches(Regex(".*[a-z].*"))) {
             passwordInput.error = "Password must contain at least one lowercase letter"
             isValid = false
-        } else if (!password.matches(Regex(".*\\d.*"))) {
-            passwordInput.error = "Password must contain at least one number"
-            isValid = false
         }
-
         return isValid
     }
 
@@ -147,17 +197,13 @@ class SignUp : AppCompatActivity() {
         } else {
             // Show password
             passwordInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-            // passwordToggle.setImageResource(R.drawable.ic_eye_open) // Eye open icon (if you have it)
             isPasswordVisible = true
         }
-
         // Move cursor to end of text
         passwordInput.setSelection(passwordInput.text.length)
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
-        // Navigate back to Sign In
         navigateToSignIn()
     }
 }
