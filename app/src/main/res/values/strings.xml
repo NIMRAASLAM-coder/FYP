@@ -9,6 +9,8 @@
         <item>Oldest</item>
     </string-array>
 
+    <string name="default_web_client_id">924546928993-13nhk71koi233i4vs0untdhslj5qn9dt.apps.googleusercontent.com</string>
+
     <string-array name="session_filter">
         <item>All Sessions</item>
         <item>Practice</item>
