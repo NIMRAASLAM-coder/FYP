@@ -2,14 +2,19 @@ package com.fyp.nextshot
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
+import com.google.firebase.auth.FirebaseAuthRecentLoginRequiredException
 
 class NewPasswordActivity : AppCompatActivity() {
 
+    private lateinit var auth: FirebaseAuth // Declare FirebaseAuth
     private lateinit var btnBack: ImageView
     private lateinit var etNewPassword: EditText
     private lateinit var etConfirmPassword: EditText
@@ -23,6 +28,9 @@ class NewPasswordActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_new_password)
+
+        // Initialize Firebase Auth
+        auth = FirebaseAuth.getInstance()
 
         // Initialize views
         btnBack = findViewById(R.id.btnBack)
@@ -49,11 +57,12 @@ class NewPasswordActivity : AppCompatActivity() {
             togglePasswordVisibility(etConfirmPassword, btnToggleConfirmPassword, isConfirmPasswordVisible)
         }
 
-        // Send button
+        // Send button - UPDATED WITH FIREBASE LOGIC
         btnSend.setOnClickListener {
             val newPassword = etNewPassword.text.toString().trim()
             val confirmPassword = etConfirmPassword.text.toString().trim()
 
+            // 1. Initial Client-Side Validation
             when {
                 newPassword.isEmpty() || confirmPassword.isEmpty() -> {
                     Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
@@ -65,23 +74,64 @@ class NewPasswordActivity : AppCompatActivity() {
                     Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 }
                 else -> {
-                    // TODO: Update password with backend
-                    Toast.makeText(this, "Password updated successfully", Toast.LENGTH_SHORT).show()
-                    startActivity(Intent(this, SignIn::class.java))
-                    finish()
+                    // 2. Call Firebase Update Function
+                    updateUserPassword(newPassword)
                 }
             }
         }
     }
 
+    /**
+     * Updates the password for the currently authenticated user.
+     */
+    private fun updateUserPassword(newPassword: String) {
+        val user = auth.currentUser
+
+        if (user != null) {
+            user.updatePassword(newPassword)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "Password updated successfully! Please sign in.", Toast.LENGTH_LONG).show()
+
+                        // Sign out the user for a clean transition and require re-login with the new password
+                        auth.signOut()
+
+                        // Navigate to Sign In
+                        val intent = Intent(this, SignIn::class.java)
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(intent)
+                        finish()
+                    } else {
+                        // Handle failure case
+                        val exception = task.exception
+                        val message = when(exception) {
+                            is FirebaseAuthRecentLoginRequiredException -> "Update failed: Please re-authenticate."
+                            is FirebaseAuthInvalidCredentialsException -> "Update failed: Invalid credentials provided."
+                            else -> "Update failed: ${exception?.message}"
+                        }
+                        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    }
+                }
+        } else {
+            // Should not happen if the flow is correct (user clicks link and lands here)
+            Toast.makeText(this, "Error: No authenticated user found. Please try the reset process again.", Toast.LENGTH_LONG).show()
+            // Navigate back to Sign In if no user is found
+            startActivity(Intent(this, SignIn::class.java))
+            finish()
+        }
+    }
+
+
     private fun togglePasswordVisibility(editText: EditText, imageView: ImageView, isVisible: Boolean) {
         if (isVisible) {
-            editText.inputType = 1 // TEXT
-            imageView.setImageResource(R.drawable.img_3)
+            // Show password (InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD is the correct constant)
+            editText.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
         } else {
-            editText.inputType = 129 // PASSWORD
-            imageView.setImageResource(R.drawable.img_3)
+            // Hide password (InputType.TYPE_TEXT_VARIATION_PASSWORD is the correct constant)
+            editText.inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
         }
+        // Use your eye icon resource ID
+        imageView.setImageResource(R.drawable.img_3)
         editText.setSelection(editText.text.length)
     }
 }
