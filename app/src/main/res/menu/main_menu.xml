@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu
-    android:background="@color/white"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/white">
 
-    <group
-        android:checkableBehavior="single">
+    <group android:checkableBehavior="single">
 
         <item
             android:id="@+id/profile"
@@ -23,7 +21,7 @@
 
         <item
             android:id="@+id/AI"
-            android:title="AI Coahing Chat"
+            android:title="AI Coaching Chat"
             android:icon="@drawable/img_18"/>
 
         <item

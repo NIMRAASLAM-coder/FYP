@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Light Blue Circle -->
+    <item
+        android:left="-100dp"
+        android:top="-150dp">
+        <shape android:shape="oval">
+            <size
+                android:width="400dp"
+                android:height="400dp" />
+            <solid android:color="@color/light_blue" />
+        </shape>
+    </item>
+
+    <!-- Dark Blue Circle -->
+    <item
+        android:right="-50dp"
+        android:top="-180dp">
+        <shape android:shape="oval">
+            <size
+                android:width="300dp"
+                android:height="300dp" />
+            <solid android:color="@color/words_blue" />
+        </shape>
+    </item>
+
+</layer-list>

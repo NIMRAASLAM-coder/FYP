@@ -16,7 +16,8 @@
     </style>
 
     <style name="ShapeAppearance.App.NavigationView" parent="">
-        <item name="strokeColor">@android:color/white</item> <!-- This sets the line color to white -->
+        <item name="strokeColor">@android:color/white
+        </item> <!-- This sets the line color to white -->
         <item name="strokeWidth">1dp</item>
     </style>
 </resources>

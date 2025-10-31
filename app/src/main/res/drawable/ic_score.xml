@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- ic_score.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#000000"
+        android:pathData="M9,11.75C6.66,11.75 4.75,9.84 4.75,7.5C4.75,5.16 6.66,3.25 9,3.25C11.34,3.25 13.25,5.16 13.25,7.5C13.25,9.84 11.34,11.75 9,11.75ZM9,5.25C7.76,5.25 6.75,6.26 6.75,7.5C6.75,8.74 7.76,9.75 9,9.75C10.24,9.75 11.25,8.74 11.25,7.5C11.25,6.26 10.24,5.25 9,5.25ZM15,20.75C14.41,20.75 13.94,20.28 13.94,19.69L13.94,13.06C13.94,12.47 14.41,12 15,12C15.59,12 16.06,12.47 16.06,13.06L16.06,19.69C16.06,20.28 15.59,20.75 15,20.75Z"/>
+</vector>
