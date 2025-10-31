@@ -2,16 +2,14 @@ package com.fyp.nextshot
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
-import android.widget.Button
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.navigation.NavigationView
 
 class Dashboard : AppCompatActivity() {
@@ -19,20 +17,51 @@ class Dashboard : AppCompatActivity() {
     private lateinit var navigationView: NavigationView
     private lateinit var toolbar: Toolbar
 
+    // Bottom navigation views
+    private lateinit var navDashboard: View
+    private lateinit var navPractice: View
+    private lateinit var navProgress: View
+    private lateinit var navTips: View
+
+    // Start button
+    private lateinit var startButton: MaterialButton
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_dashboard)
 
+        // Initialize views
+        initializeViews()
+
+        // Setup toolbar and drawer
+        setupToolbarAndDrawer()
+
+        // Setup click listeners
+        setupClickListeners()
+
+        // Highlight current page in bottom navigation
+        highlightBottomNavItem(navDashboard)
+    }
+
+    private fun initializeViews() {
         drawerLayout = findViewById(R.id.drawer_layout)
         navigationView = findViewById(R.id.nav_view)
         toolbar = findViewById(R.id.menu)
 
-        setSupportActionBar(toolbar);
+        // Bottom navigation items
+        navDashboard = findViewById(R.id.nav_dashboard)
+        navPractice = findViewById(R.id.nav_practice)
+        navProgress = findViewById(R.id.nav_progress)
+        navTips = findViewById(R.id.nav_tips)
 
-        setSupportActionBar(toolbar);
+        // Start button
+        startButton = findViewById(R.id.start)
+    }
 
-        // Correct Kotlin syntax for creating an object
+    private fun setupToolbarAndDrawer() {
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
         val toggle = ActionBarDrawerToggle(
             this,
             drawerLayout,
@@ -44,19 +73,125 @@ class Dashboard : AppCompatActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        var practice = findViewById<View>(R.id.practice)
-        var progress=findViewById<View>(R.id.progress)
-
-        practice.setOnClickListener{
-            val intent = Intent(this, PracticeSession::class.java)
-            startActivity(intent)
+        // Setup navigation drawer item click listener
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            handleDrawerNavigation(menuItem)
+            true
         }
-
-        progress.setOnClickListener{
-            val intent = Intent(this, Progress::class.java)
-            startActivity(intent)
-        }
-
     }
+
+    private fun setupClickListeners() {
+        // Start practice button
+        startButton.setOnClickListener {
+            navigateToPractice()
+        }
+
+        // Bottom navigation click listeners
+        navDashboard.setOnClickListener {
+            // Already on dashboard, maybe refresh or scroll to top
+            highlightBottomNavItem(navDashboard)
+        }
+
+        navPractice.setOnClickListener {
+            navigateToPractice()
+        }
+
+        navProgress.setOnClickListener {
+            navigateToProgress()
+        }
+
+        navTips.setOnClickListener {
+            navigateToTips()
+        }
+    }
+
+    private fun navigateToPractice() {
+        val intent = Intent(this, PracticeSession::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToProgress() {
+        val intent = Intent(this, Progress::class.java)
+        startActivity(intent)
+    }
+
+    private fun navigateToTips() {
+        val intent = Intent(this, TipsForYou::class.java)
+        startActivity(intent)
+    }
+
+    private fun handleDrawerNavigation(menuItem: MenuItem) {
+        when (menuItem.itemId) {
+            // Side drawer menu items (from main_menu.xml)
+            R.id.profile -> {
+                val intent = Intent(this, EditProfileActivity::class.java)
+                startActivity(intent)
+            }
+            R.id.notification -> {
+                val intent = Intent(this, NotificationActivity::class.java)
+                startActivity(intent)
+            }
+            R.id.session_history -> {
+                val intent = Intent(this, SessionHistory::class.java)
+                startActivity(intent)
+            }
+            R.id.AI -> {
+                // TODO: Create AI Coaching Chat Activity
+                // Uncomment when you create the activity
+                 val intent = Intent(this, AICoachingChat::class.java)
+                 startActivity(intent)
+            }
+            R.id.settings -> {
+                val intent = Intent(this, SettingsActivity::class.java)
+                startActivity(intent)
+            }
+            R.id.signout -> {
+                performSignOut()
+            }
+
+            // Bottom navigation items
+            R.id.nav_practice -> {
+                navigateToPractice()
+            }
+            R.id.nav_progress -> {
+                navigateToProgress()
+            }
+            R.id.nav_tips -> {
+                navigateToTips()
+            }
+        }
+
+        // Close the drawer after navigation
+        drawerLayout.closeDrawer(GravityCompat.START)
+    }
+
+    private fun performSignOut() {
+        // Clear any user data/preferences here if needed
+        // For example: SharedPreferences, Firebase Auth, etc.
+
+        // Navigate to SignIn activity and clear the back stack
+        val intent = Intent(this, SignIn::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        finish()
+    }
+
+    private fun highlightBottomNavItem(selectedView: View) {
+        // Reset all items to normal state
+        listOf(navDashboard, navPractice, navProgress, navTips).forEach { view ->
+            view.alpha = 0.6f
+            // Find TextView in the layout and set normal style
+            val textView = (view as? android.view.ViewGroup)?.getChildAt(1) as? android.widget.TextView
+            textView?.textSize = 12f
+            textView?.setTypeface(null, android.graphics.Typeface.NORMAL)
+        }
+
+        // Highlight selected item
+        selectedView.alpha = 1f
+        val selectedTextView = (selectedView as? android.view.ViewGroup)?.getChildAt(1) as? android.widget.TextView
+        selectedTextView?.textSize = 12f
+        selectedTextView?.setTypeface(null, android.graphics.Typeface.BOLD)
+    }
+
 
 }
