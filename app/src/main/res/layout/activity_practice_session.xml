@@ -9,136 +9,255 @@
     android:fitsSystemWindows="true"
     android:background="@color/background_blue">
 
-    <com.google.android.material.navigation.NavigationView
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:id="@+id/nav_view"
-        app:headerLayout="@layout/header"
-        app:menu="@menu/main_menu"
-        android:layout_gravity="start"
-        android:background="@color/white"
-        app:dividerInsetStart="60dp"
-        app:itemIconPadding="30dp"
-        app:itemIconTint="@color/drawer_item_selector"
-        app:itemTextColor="@color/drawer_item_selector">
-
-
-    </com.google.android.material.navigation.NavigationView>
-
-    <RelativeLayout
+    <!-- Main Content -->
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout
-            android:layout_marginTop="20dp"
-            android:id="@+id/first"
-            android:layout_width="match_parent"
+        <!-- Top Bar -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/top_bar_card"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="3">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/menu"
-                android:layout_width="0dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center"
-                android:layout_weight="0.5"
-                android:src="@drawable/img_6" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="4dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="2"
-                android:orientation="vertical"
-                android:layout_gravity="center">
+                android:orientation="horizontal"
+                android:padding="12dp"
+                android:background="@color/background_blue"
+                android:gravity="center_vertical">
+
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/menu"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:contentDescription="Menu"
+                    app:navigationIcon="@drawable/hamburger" />
 
                 <TextView
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
+                    android:layout_weight="1"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
                     android:text="Practice Session"
                     android:textColor="@color/words_blue"
-                    android:textSize="18dp"
-                    android:textStyle="bold" />
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:gravity="center" />
 
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/img_7"
+                    android:contentDescription="Profile"
+                    android:scaleType="centerCrop" />
             </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
-            <ImageView
-                android:layout_width="0dp"
-                android:layout_height="40dp"
+        <!-- Camera Preview Container -->
+        <FrameLayout
+            android:id="@+id/camera_container"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_margin="16dp"
+            android:background="@android:color/black"
+            app:layout_constraintBottom_toTopOf="@+id/bottom_action_card"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/top_bar_card">
+
+
+
+            <!-- Overlay Instructions Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/instruction_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_weight="0.5"
-                android:src="@drawable/img_7" />
-
-        </LinearLayout>
-
-        <ScrollView
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="20dp"
-            android:layout_below="@+id/first"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/one"
-            android:layout_above="@+id/bottom_navigation">
-
-        </ScrollView>
-
-        <LinearLayout
-            android:id="@+id/bottom_navigation"
-            android:background="@color/words_blue"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:orientation="vertical"
-            android:gravity="center_vertical"
-            android:paddingTop="10dp"
-            android:paddingBottom="14dp">
-
-            <RelativeLayout
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="20dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-
-                <Button
-                    android:id="@+id/start"
-                    android:layout_width="160dp"
-                    android:layout_height="55dp"
-                    android:layout_centerInParent="true"
-                    android:backgroundTint="@color/grey" />
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
+                app:cardBackgroundColor="#CC000000"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="8dp">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_centerInParent="true">
+                    android:orientation="vertical"
+                    android:padding="24dp"
+                    android:gravity="center">
 
                     <ImageView
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/img_10" />
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
+                        android:src="@drawable/img_10"
+                        android:contentDescription="Ready Icon"
+                        app:tint="@color/white"
+                        android:layout_marginBottom="16dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_marginStart="5dp"
-                        android:text="Start Session"
-                        android:textColor="@color/words_blue"
-                        android:textStyle="bold" />
+                        android:text="Get Ready!"
+                        android:textColor="@color/white"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="8dp" />
 
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Position yourself in the stance markers"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:gravity="center"
+                        android:lineSpacingExtra="4dp" />
                 </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
-            </RelativeLayout>
+            <!-- Stance Markers Overlay (Optional) -->
+            <ImageView
+                android:id="@+id/stance_markers"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Stance Guide"
+                android:visibility="gone"
+                android:scaleType="fitCenter" />
 
-            <TextView
-                android:layout_marginStart="20dp"
+            <!-- Session Info Overlay -->
+            <LinearLayout
+                android:id="@+id/session_info_overlay"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="position yourself in the stance markers and start your session"
-                android:textColor="@color/white"/>
+                android:layout_gravity="top|end"
+                android:layout_margin="16dp"
+                android:orientation="vertical"
+                android:background="@drawable/rectangle_background"
+                android:backgroundTint="#CC000000"
+                android:padding="12dp"
+                android:visibility="gone">
 
-        </LinearLayout>
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
 
-    </RelativeLayout>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="⏱ "
+                        android:textSize="16sp"
+                        android:textColor="@color/white" />
+
+                    <TextView
+                        android:id="@+id/session_timer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="00:00"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎯 "
+                        android:textSize="16sp"
+                        android:textColor="@color/white" />
+
+                    <TextView
+                        android:id="@+id/shots_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 shots"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- Bottom Action Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/bottom_action_card"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/words_blue"
+            app:cardCornerRadius="0dp"
+            app:cardElevation="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Start/Stop Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/start_stop_button"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:text="Start Session"
+                    android:textColor="@color/words_blue"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    app:backgroundTint="@color/grey"
+                    app:cornerRadius="12dp"
+                    app:icon="@drawable/img_10"
+                    app:iconGravity="textStart"
+                    app:iconPadding="8dp"
+                    app:iconSize="28dp"
+                    app:iconTint="@color/words_blue"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Instruction Text -->
+                <TextView
+                    android:id="@+id/instruction_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Position yourself in the stance markers and start your session"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="2dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Navigation Drawer -->
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="@color/white"
+        app:headerLayout="@layout/header"
+        app:menu="@menu/main_menu"
+        app:dividerInsetStart="60dp"
+        app:itemIconPadding="30dp"
+        app:itemIconTint="@color/drawer_item_selector"
+        app:itemTextColor="@color/drawer_item_selector" />
 
 </androidx.drawerlayout.widget.DrawerLayout>
