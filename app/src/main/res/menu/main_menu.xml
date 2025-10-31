@@ -7,31 +7,31 @@
         <item
             android:id="@+id/profile"
             android:title="Profile"
-            android:icon="@drawable/img_15"
+            android:icon="@drawable/user"
             android:titleCondensed="Profile" />
 
         <item
             android:id="@+id/notification"
             android:title="Notification"
-            android:icon="@drawable/img_16"
+            android:icon="@drawable/notification"
             android:titleCondensed="Notification" />
 
         <item
             android:id="@+id/session_history"
             android:title="Session History"
-            android:icon="@drawable/img_17"
+            android:icon="@drawable/history"
             android:titleCondensed="Session History" />
 
         <item
             android:id="@+id/AI"
             android:title="AI Coaching Chat"
-            android:icon="@drawable/img_18"
+            android:icon="@drawable/chat_bubble"
             android:titleCondensed="AI Coaching Chat" />
 
         <item
             android:id="@+id/settings"
             android:title="Settings"
-            android:icon="@drawable/img_19"
+            android:icon="@drawable/setting"
             android:titleCondensed="Settings" />
 
     </group>
