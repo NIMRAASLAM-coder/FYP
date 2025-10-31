@@ -26,6 +26,21 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FYP">
         <activity
+            android:name=".SuccessfulLogoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SignOutConfirmationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".NewPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".VerificationActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ForgetPasswordActivity"
+            android:exported="false" />
+        <activity
             android:name=".AICoachingChat"
             android:exported="false"
             android:theme="@style/Theme.FYP" />
@@ -41,16 +56,12 @@
             android:name=".FlawsTracking"
             android:exported="false"
             android:theme="@style/Theme.FYP" />
-
         <activity
             android:name=".PerformanceTracking"
             android:exported="false" />
-
         <activity
             android:name=".SettingsActivity"
-            android:exported="false"
-             />
-
+            android:exported="false" />
         <activity
             android:name=".SessionHistory"
             android:exported="false" />
@@ -70,7 +81,6 @@
             android:name=".PracticeSession"
             android:exported="false"
             android:screenOrientation="portrait" />
-
         <activity
             android:name=".SignUp"
             android:exported="false" />

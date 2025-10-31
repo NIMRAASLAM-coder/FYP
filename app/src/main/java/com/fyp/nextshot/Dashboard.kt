@@ -136,8 +136,6 @@ class Dashboard : AppCompatActivity() {
                 startActivity(intent)
             }
             R.id.AI -> {
-                // TODO: Create AI Coaching Chat Activity
-                // Uncomment when you create the activity
                  val intent = Intent(this, AICoachingChat::class.java)
                  startActivity(intent)
             }
@@ -146,7 +144,9 @@ class Dashboard : AppCompatActivity() {
                 startActivity(intent)
             }
             R.id.signout -> {
-                performSignOut()
+                startActivity(Intent(this, SignOutConfirmationActivity::class.java))
+                drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
+                true
             }
 
             // Bottom navigation items
@@ -165,16 +165,16 @@ class Dashboard : AppCompatActivity() {
         drawerLayout.closeDrawer(GravityCompat.START)
     }
 
-    private fun performSignOut() {
-        // Clear any user data/preferences here if needed
-        // For example: SharedPreferences, Firebase Auth, etc.
-
-        // Navigate to SignIn activity and clear the back stack
-        val intent = Intent(this, SignIn::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        startActivity(intent)
-        finish()
-    }
+//    private fun performSignOut() {
+//        // Clear any user data/preferences here if needed
+//        // For example: SharedPreferences, Firebase Auth, etc.
+//
+//        // Navigate to SignIn activity and clear the back stack
+//        val intent = Intent(this, SignIn::class.java)
+//        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//        startActivity(intent)
+//        finish()
+//    }
 
     private fun highlightBottomNavItem(selectedView: View) {
         // Reset all items to normal state

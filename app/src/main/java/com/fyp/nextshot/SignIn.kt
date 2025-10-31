@@ -61,9 +61,8 @@ class SignIn : AppCompatActivity() {
 
         // Forgot Password Click
         forgotPassword.setOnClickListener {
-            // TODO: Navigate to Forgot Password screen
-            // val intent = Intent(this, ForgotPassword::class.java)
-            // startActivity(intent)
+            val intent = Intent(this, ForgetPasswordActivity::class.java)
+            startActivity(intent)
         }
 
         // Password Visibility Toggle
