@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "924546928993",
+    "project_id": "nextshot-43946",
+    "storage_bucket": "nextshot-43946.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:924546928993:android:ab8277ec4137d59132f520",
+        "android_client_info": {
+          "package_name": "com.fyp.nextshot"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "924546928993-13nhk71koi233i4vs0untdhslj5qn9dt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKqlcfWcoUKXrCiABAzmOq-VkxwcVivoo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "924546928993-13nhk71koi233i4vs0untdhslj5qn9dt.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
