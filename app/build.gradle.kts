@@ -1,8 +1,23 @@
+import java.util.Properties
+import java.io.FileInputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+}
 
+// Helper to read local.properties
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(FileInputStream(localPropertiesFile))
+}
+var geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+
+// Sanitize the API key: remove surrounding quotes if the user added them in local.properties
+if (geminiApiKey.startsWith("\"") && geminiApiKey.endsWith("\"")) {
+    geminiApiKey = geminiApiKey.substring(1, geminiApiKey.length - 1)
 }
 
 android {
@@ -17,6 +32,9 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        // Define the API Key in BuildConfig
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     buildTypes {
@@ -37,6 +55,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 }
 
@@ -44,40 +63,44 @@ android {
 dependencies {
 
     // AndroidX & UI Essentials
-    implementation(libs.androidx.core.ktx) // Kept the second one, assuming it's correctly defined in libs.versions.toml
+    implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    implementation("com.google.android.material:material:1.9.0") // Redundant, but sometimes necessary if libs.material is an older version
+    // implementation("com.google.android.material:material:1.11.0") // Redundant with libs.material
 
     // Image Loading (Glide)
-    implementation("com.github.bumptech.glide:glide:4.12.0")
-    annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    // implementation(libs.firebase.auth) // Removed to avoid conflict with BOM
+    implementation(libs.androidx.credentials)
+    implementation(libs.androidx.credentials.play.services.auth)
+    implementation(libs.googleid)
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    
+    // Google AI Client
+    implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    
+    // Guava (for ListenableFuture) - Needed by CameraX
+    implementation("com.google.guava:guava:33.0.0-android")
+
+    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+
 
     // Navigation
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
-    // Firebase Bill of Materials (BOM)
-    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    // Firebase Bill of Materials (BOM) - Updated to fix conflicts
+    implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
     // Firebase Libraries (Rely on BOM version)
     implementation("com.google.firebase:firebase-auth-ktx")
-    implementation("com.google.firebase:firebase-firestore-ktx") {
-        // TARGETED FIX: Exclude older firebase-common to resolve Duplicate Class error
-        exclude(group = "com.google.firebase", module = "firebase-common")
-    }
+    implementation("com.google.firebase:firebase-firestore-ktx") 
+    // Removed explicit exclude as updated BOM handles dependencies better
 
     // Google Services (for Google Sign-In)
     implementation("com.google.android.gms:play-services-auth:20.7.0")
-
-    // REDUNDANCY REMOVAL: These lines are likely redundant or conflict
-    // when using the BOM and the play-services-auth dependency above.
-    // implementation(libs.firebase.auth)
-    // implementation(libs.androidx.credentials)
-    // implementation(libs.androidx.credentials.play.services.auth)
-    // implementation(libs.googleid)
 
     // Testing
     testImplementation(libs.junit)
@@ -86,7 +109,7 @@ dependencies {
 
 
     // CameraX dependencies
-    val cameraXVersion = "1.3.1" // Use the latest stable version
+    val cameraXVersion = "1.3.1"
     implementation("androidx.camera:camera-core:$cameraXVersion")
     implementation("androidx.camera:camera-camera2:$cameraXVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraXVersion")
@@ -94,5 +117,4 @@ dependencies {
 
     // Kotlin coroutines for threading
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
 }
