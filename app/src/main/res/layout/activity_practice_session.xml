@@ -78,6 +78,18 @@
             app:layout_constraintTop_toBottomOf="@+id/top_bar_card">
 
 
+            <com.fyp.nextshot.BoundingBoxOverlay
+                android:id="@+id/bbox_overlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"/>
+
+            <ImageView
+                android:id="@+id/workflow_output_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitCenter"
+                android:contentDescription="Workflow Output" />
 
             <!-- Overlay Instructions Card -->
             <androidx.cardview.widget.CardView
