@@ -128,6 +128,22 @@
             android:maxLines="3"
             android:inputType="textCapSentences|textMultiLine" />
 
+        <!-- In your input LinearLayout, after EditText, before btnSend -->
+        <ImageView
+            android:id="@+id/btnMic"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:src="@drawable/mic"
+            android:layout_marginStart="8dp"
+            android:padding="10dp"
+            android:contentDescription="Speak"
+            android:background="@drawable/bg_send_button"
+            android:clickable="true"
+            android:focusable="true"
+            app:tint="#FFFFFF" />
+
+
+
         <ImageView
             android:id="@+id/btnSend"
             android:layout_width="44dp"

@@ -1,14 +1,24 @@
 package com.fyp.nextshot
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.speech.RecognitionListener
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
+import java.util.Locale
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.fyp.nextshot.BuildConfig
 import com.fyp.nextshot.databinding.ActivityAicoachingChatBinding
 import kotlinx.coroutines.CoroutineScope
@@ -27,8 +37,9 @@ import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.Locale
 import java.util.concurrent.TimeUnit
+import android.widget.Toast
+
 
 class AICoachingChat : AppCompatActivity() {
     private lateinit var binding: ActivityAicoachingChatBinding
@@ -49,6 +60,13 @@ class AICoachingChat : AppCompatActivity() {
 
     // Chat History to maintain context (A "Proper Chatbot")
     private val chatHistory = JSONArray()
+
+
+    // FIXED: STT/TTS Setup
+    private var speechRecognizer: SpeechRecognizer? = null
+    private var textToSpeech: TextToSpeech? = null
+    private var isListening = false
+    private val REQUEST_RECORD_AUDIO = 1001  // Perm request code
 
     // ------------------------------------------------------------------------
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,6 +91,7 @@ class AICoachingChat : AppCompatActivity() {
         setupBottomNavigation()
         setupMenuButton()
         setupSendButton()
+        setupVoiceInput()  // NEW: Voice setup
 
         // FIXED: Initialize history with system prompt for consistent coaching persona
         initializeChatHistory()
@@ -127,6 +146,102 @@ class AICoachingChat : AppCompatActivity() {
             }
         }
     }
+
+    // FIXED: Full setup (add as new function)
+    private fun setupVoiceInput() {
+        // Request RECORD_AUDIO perm
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_RECORD_AUDIO)
+        } else {
+            initSpeechRecognizer()
+            initTextToSpeech()
+        }
+
+        // Mic button listener (add btnMic to XML if not)
+        binding.btnMic.setOnClickListener {
+            if (!isListening) startListening() else stopListening()
+        }
+    }
+
+    private fun initSpeechRecognizer() {
+        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        val recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak your cricket question...")
+            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+        }
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {  // FIXED: Full impl
+            override fun onReadyForSpeech(params: Bundle?) {
+                isListening = true
+                Toast.makeText(this@AICoachingChat, "Listening...", Toast.LENGTH_SHORT).show()  // FIXED: Import Toast
+            }
+
+            override fun onBeginningOfSpeech() {}
+
+            override fun onRmsChanged(rmsdB: Float) {}
+
+            override fun onBufferReceived(buffer: ByteArray?) {}  // FIXED: Impl abstract method
+
+            override fun onEndOfSpeech() {}
+
+            override fun onError(error: Int) {
+                Log.e("STT", "Error $error")
+                isListening = false
+                binding.btnMic.setImageResource(R.drawable.mic)  // Reset icon
+            }
+
+            override fun onResults(results: Bundle?) {
+                val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                matches?.firstOrNull()?.let { transcript ->
+                    binding.inputMessage.setText(transcript)
+                    binding.btnSend.performClick()  // Auto-send
+                }
+                isListening = false
+                binding.btnMic.setImageResource(R.drawable.mic)
+            }
+
+            override fun onPartialResults(partialResults: Bundle?) {
+                // Optional: Live update EditText
+                val partial = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                partial?.firstOrNull()?.let { binding.inputMessage.setText(it) }
+            }
+
+            override fun onEvent(eventType: Int, params: Bundle?) {}
+        })
+    }
+
+    private fun initTextToSpeech() {
+        textToSpeech = TextToSpeech(this) { status ->
+            if (status == TextToSpeech.SUCCESS) {
+                textToSpeech?.setLanguage(Locale.getDefault())
+                textToSpeech?.setPitch(1.0f)
+                textToSpeech?.setSpeechRate(0.9f)
+            }
+        }
+    }
+
+    private fun startListening() {
+        isListening = true
+        binding.btnMic.setImageResource(R.drawable.stop)  // Assume stop icon
+        speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {  // FIXED: Intent wrapper
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak your cricket question...")
+        })
+    }
+
+    private fun stopListening() {
+        isListening = false
+        speechRecognizer?.stopListening()
+        binding.btnMic.setImageResource(R.drawable.mic)
+    }
+
+    // FIXED: Speak after bot response (add this in addBotResponse, after scrollToBottom())
+    private fun speakResponse(text: String) {
+        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "coach_${System.currentTimeMillis()}")
+    }
+
 
     private fun getAIResponseHTTP(userMessage: String) {
         // FIXED: Quick key check before API call
@@ -276,6 +391,7 @@ class AICoachingChat : AppCompatActivity() {
         val botMessageView = createMessageView(response, false, isInitial)
         binding.chatContainer.addView(botMessageView)
         scrollToBottom()
+        if (!isInitial) speakResponse(response)  // NEW: Auto-speak
     }
 
     private fun createMessageView(message: String, isUser: Boolean, isInitial: Boolean = false): View {
@@ -327,9 +443,24 @@ class AICoachingChat : AppCompatActivity() {
         }
     }
 
+
     private fun setupMenuButton() {
         binding.btnMenu.setOnClickListener {
             // Menu Logic (e.g., open drawer)
+        }
+    }
+
+
+
+    // FIXED: Add this as override (class level)
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_RECORD_AUDIO && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            initSpeechRecognizer()
+            initTextToSpeech()
+            Toast.makeText(this, "Mic ready—tap to speak!", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "Mic permission needed for voice chat!", Toast.LENGTH_LONG).show()
         }
     }
 }
