@@ -2,7 +2,6 @@
 <androidx.drawerlayout.widget.DrawerLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,7 +23,6 @@
             android:layout_marginEnd="16dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="4dp"
-
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -65,33 +63,84 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+
+        <!-- SCROLLABLE DEMO UPDATE TOOL -->
+        <ScrollView
+            android:id="@+id/update_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@+id/top_bar_card">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--- DEMO UPDATE TOOL ---"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_cloud_id_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Paste Cloud Document ID Here"
+                    android:inputType="text"
+                    android:textSize="14sp" />
+
+                <Button
+                    android:id="@+id/btn_trigger_update"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Trigger Analysis Update (0.95 Acc)" />
+            </LinearLayout>
+
+        </ScrollView>
+
+
         <!-- Camera Preview Container -->
         <FrameLayout
             android:id="@+id/camera_container"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_margin="16dp"
+            android:layout_margin="18dp"
             android:background="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@+id/update_scroll_view"
             app:layout_constraintBottom_toTopOf="@+id/bottom_action_card"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/top_bar_card">
-
+            app:layout_constraintEnd_toEndOf="parent">
 
             <com.fyp.nextshot.BoundingBoxOverlay
                 android:id="@+id/bbox_overlay"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center"/>
+                android:layout_height="match_parent" />
 
             <ImageView
                 android:id="@+id/workflow_output_image_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scaleType="fitCenter"
-                android:contentDescription="Workflow Output" />
+                android:scaleType="fitCenter" />
 
-            <!-- Overlay Instructions Card -->
+            <TextView
+                android:id="@+id/recording_timer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="00:00"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="#CC000000"
+                android:padding="8dp"
+                android:visibility="gone"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="16dp"
+                android:elevation="20dp"/>
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/instruction_card"
                 android:layout_width="match_parent"
@@ -114,9 +163,8 @@
                         android:layout_width="80dp"
                         android:layout_height="80dp"
                         android:src="@drawable/img_10"
-                        android:contentDescription="Ready Icon"
-                        app:tint="@color/white"
-                        android:layout_marginBottom="16dp" />
+                        android:layout_marginBottom="16dp"
+                        app:tint="@color/white"/>
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -133,21 +181,17 @@
                         android:text="Position yourself in the stance markers"
                         android:textColor="@color/white"
                         android:textSize="16sp"
-                        android:gravity="center"
-                        android:lineSpacingExtra="4dp" />
+                        android:gravity="center" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- Stance Markers Overlay (Optional) -->
             <ImageView
                 android:id="@+id/stance_markers"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:contentDescription="Stance Guide"
                 android:visibility="gone"
                 android:scaleType="fitCenter" />
 
-            <!-- Session Info Overlay -->
             <LinearLayout
                 android:id="@+id/session_info_overlay"
                 android:layout_width="wrap_content"
@@ -155,24 +199,22 @@
                 android:layout_gravity="top|end"
                 android:layout_margin="16dp"
                 android:orientation="vertical"
+                android:padding="12dp"
                 android:background="@drawable/rectangle_background"
                 android:backgroundTint="#CC000000"
-                android:padding="12dp"
                 android:visibility="gone">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="center_vertical"
-                    android:layout_marginBottom="8dp">
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="⏱ "
-                        android:textSize="16sp"
-                        android:textColor="@color/white" />
+                        android:textColor="@color/white"
+                        android:textSize="16sp"/>
 
                     <TextView
                         android:id="@+id/session_timer"
@@ -181,21 +223,21 @@
                         android:text="00:00"
                         android:textColor="@color/white"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
                 </LinearLayout>
 
                 <LinearLayout
+                    android:orientation="horizontal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:layout_marginTop="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="🎯 "
-                        android:textSize="16sp"
-                        android:textColor="@color/white" />
+                        android:textColor="@color/white"
+                        android:textSize="16sp"/>
 
                     <TextView
                         android:id="@+id/shots_count"
@@ -204,9 +246,11 @@
                         android:text="0 shots"
                         android:textColor="@color/white"
                         android:textSize="16sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
                 </LinearLayout>
+
             </LinearLayout>
+
         </FrameLayout>
 
         <!-- Bottom Action Card -->
@@ -218,45 +262,52 @@
             app:cardCornerRadius="0dp"
             app:cardElevation="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <LinearLayout
+                android:id="@+id/upload_record_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="12dp">
 
-                <!-- Start/Stop Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/upload_video_button"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_weight="1"
+                    android:text="Upload Video"
+                    android:textColor="@color/words_blue"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    app:backgroundTint="@color/white"
+                    app:icon="@drawable/upload"
+                    app:iconGravity="textStart"
+                    app:iconSize="28dp"
+                    android:layout_marginEnd="12dp"/>
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/start_stop_button"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="60dp"
+                    android:layout_weight="1"
                     android:text="Start Session"
                     android:textColor="@color/words_blue"
                     android:textStyle="bold"
                     android:textSize="16sp"
                     app:backgroundTint="@color/grey"
-                    app:cornerRadius="12dp"
                     app:icon="@drawable/img_10"
                     app:iconGravity="textStart"
                     app:iconPadding="8dp"
                     app:iconSize="28dp"
-                    app:iconTint="@color/words_blue"
-                    android:layout_marginBottom="12dp" />
+                    app:iconTint="@color/words_blue" />
 
-                <!-- Instruction Text -->
-                <TextView
-                    android:id="@+id/instruction_text"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Position yourself in the stance markers and start your session"
-                    android:textColor="@color/white"
-                    android:textSize="14sp"
-                    android:gravity="center"
-                    android:lineSpacingExtra="2dp" />
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- Navigation Drawer -->
@@ -268,7 +319,6 @@
         android:background="@color/white"
         app:headerLayout="@layout/header"
         app:menu="@menu/main_menu"
-        app:dividerInsetStart="60dp"
         app:itemIconPadding="30dp"
         app:itemIconTint="@color/drawer_item_selector"
         app:itemTextColor="@color/drawer_item_selector" />
