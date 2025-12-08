@@ -5,19 +5,23 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+
+    id("kotlin-kapt")
 }
 
-// Helper to read local.properties
+// FIXED: Load local.properties at TOP (global scope, before android block)
 val localProperties = Properties()
 val localPropertiesFile = rootProject.file("local.properties")
 if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
-var geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
 
 // Sanitize the API key: remove surrounding quotes if the user added them in local.properties
-if (geminiApiKey.startsWith("\"") && geminiApiKey.endsWith("\"")) {
-    geminiApiKey = geminiApiKey.substring(1, geminiApiKey.length - 1)
+val sanitizedGeminiApiKey = if (geminiApiKey.startsWith("\"") && geminiApiKey.endsWith("\"")) {
+    geminiApiKey.substring(1, geminiApiKey.length - 1)
+} else {
+    geminiApiKey
 }
 
 android {
@@ -34,7 +38,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
         // Define the API Key in BuildConfig
-        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"$sanitizedGeminiApiKey\"")
     }
 
     buildTypes {
@@ -59,6 +63,14 @@ android {
     }
 }
 
+kapt {
+    correctErrorTypes = true
+}
+
+// Exclude older intellij annotations to prevent duplicate class errors
+configurations.all {
+    exclude(group = "com.intellij", module = "annotations")
+}
 
 dependencies {
 
@@ -70,13 +82,18 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     // implementation("com.google.android.material:material:1.11.0") // Redundant with libs.material
 
+    // Lifecycle
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
+
     // Image Loading (Glide)
     implementation("com.github.bumptech.glide:glide:4.16.0")
     // implementation(libs.firebase.auth) // Removed to avoid conflict with BOM
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
-    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+    implementation(libs.androidx.ui)
+    implementation(libs.firebase.firestore)
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
     
     // Google AI Client
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
@@ -84,7 +101,8 @@ dependencies {
     // Guava (for ListenableFuture) - Needed by CameraX
     implementation("com.google.guava:guava:33.0.0-android")
 
-    implementation("com.squareup.okhttp3:okhttp:5.3.2")
+    // Downgraded to 4.12.0 to resolve Kotlin metadata version incompatibility
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
 
     // Navigation
@@ -97,6 +115,7 @@ dependencies {
     // Firebase Libraries (Rely on BOM version)
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx") 
+    implementation("com.google.firebase:firebase-storage")
     // Removed explicit exclude as updated BOM handles dependencies better
 
     // Google Services (for Google Sign-In)
@@ -107,14 +126,47 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
+    // Retrofit + Gson converter
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+//// OkHttp (optional: logging)
+//    implementation("com.squareup.okhttp3:okhttp:4.11.0")
+//    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
+// Coroutines (recommended later for async calls)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
+//    val roomVersion = "2.6.1"
+//
+//    implementation("androidx.room:room-runtime:$roomVersion")
+//    kapt("androidx.room:room-compiler:$roomVersion")
+//    implementation("androidx.room:room-ktx:$roomVersion")
+
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+
+
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    kapt(libs.androidx.room.compiler)
+
+    kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0")
     // CameraX dependencies
     val cameraXVersion = "1.3.1"
     implementation("androidx.camera:camera-core:$cameraXVersion")
     implementation("androidx.camera:camera-camera2:$cameraXVersion")
     implementation("androidx.camera:camera-lifecycle:$cameraXVersion")
     implementation("androidx.camera:camera-view:$cameraXVersion")
+    implementation("androidx.camera:camera-video:1.3.4")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
-    // Kotlin coroutines for threading
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
+
+//
+//    implementation("androidx.camera:camera-core:1.1.0")
+//    implementation("androidx.camera:camera-camera2:1.1.0")
+//    implementation("androidx.camera:camera-lifecycle:1.1.0")
+//    implementation("androidx.camera:camera-video:1.1.0")
+//    implementation("androidx.camera:camera-view:1.0.0-alpha30")
+
 }
+
