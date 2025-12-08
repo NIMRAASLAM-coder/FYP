@@ -5,13 +5,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.fyp.nextshot.data.local.models.SessionEntity
 import com.google.android.material.button.MaterialButton
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.TimeUnit
 
 class SessionAdapter(
-    private val sessions: List<SessionData>,
-    private val onViewAnalysisClick: (SessionData) -> Unit,
-    private val onShareClick: (SessionData) -> Unit
+    // 1. Change input type from SessionData to SessionEntity
+    private val sessions: MutableList<SessionEntity>,
+    private val onViewAnalysisClick: (SessionEntity) -> Unit,
+    private val onShareClick: (SessionEntity) -> Unit
 ) : RecyclerView.Adapter<SessionAdapter.SessionViewHolder>() {
+
+    // Helper function to format date
+    private val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
 
     inner class SessionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val sessionTitle: TextView = itemView.findViewById(R.id.session_title)
@@ -23,14 +31,31 @@ class SessionAdapter(
         val btnViewAnalysis: MaterialButton = itemView.findViewById(R.id.btn_view_analysis)
         val btnShare: MaterialButton = itemView.findViewById(R.id.btn_share)
 
-        fun bind(session: SessionData) {
-            sessionTitle.text = session.title
-            sessionDate.text = session.date
-            sessionScore.text = session.score.toString()
-            sessionAccuracy.text = "${session.accuracy}%"
-            sessionDuration.text = session.duration.toString()
-            sessionShots.text = session.shots.toString()
+        // 2. Change bind parameter type
+        fun bind(session: SessionEntity) {
 
+            // Map SessionEntity properties to UI elements:
+
+            // SessionEntity.drillType -> SessionData.title
+            sessionTitle.text = session.drillType
+
+            // SessionEntity.dateMillis -> SessionData.date
+            val formattedDate = dateFormat.format(Date(session.dateMillis))
+            sessionDate.text = formattedDate
+
+            // SessionEntity.successRate (0.0 to 1.0) -> SessionData.score/accuracy
+            val accuracyPercent = (session.successRate * 100).toInt()
+            sessionScore.text = accuracyPercent.toString() // Using accuracy as "Score"
+            sessionAccuracy.text = "${accuracyPercent}%"
+
+            // SessionEntity.durationSeconds -> SessionData.duration (convert to minutes)
+            val durationMinutes = TimeUnit.SECONDS.toMinutes(session.durationSeconds.toLong())
+            sessionDuration.text = durationMinutes.toString()
+
+            // SessionEntity doesn't explicitly have 'shots', so we use duration as placeholder or add a default
+            sessionShots.text = "${session.durationSeconds / 5} shots" // Example calculation for shots
+
+            // Click Listeners (types are now SessionEntity)
             btnViewAnalysis.setOnClickListener {
                 onViewAnalysisClick(session)
             }
