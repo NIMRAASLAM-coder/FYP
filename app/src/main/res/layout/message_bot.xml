@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="start"
+    android:layout_marginBottom="16dp"
+    android:tag="bot_message_bubble">
+
+    <FrameLayout
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_bot_avatar"
+        android:layout_marginEnd="10dp">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_bot"
+            android:layout_gravity="center"
+            android:contentDescription="Bot" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/text_message_body"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_bot_message"
+            android:padding="12dp"
+            tools:text="Great question! To improve your batting stance, keep your feet shoulder-width apart, position your bat at a 45-degree angle, and maintain a balanced weight distribution."
+            android:textColor="#002B5C"
+            android:textSize="13sp"
+            android:lineSpacingExtra="2dp"
+            android:maxWidth="250dp" />
+
+        <TextView
+            android:id="@+id/timestamp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Just now"
+            android:textColor="#90A4AE"
+            android:textSize="10sp"
+            android:layout_marginTop="4dp"
+            android:layout_marginStart="4dp" />
+    </LinearLayout>
+</LinearLayout>
