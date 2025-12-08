@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/img_12"
+                app:tint="@color/words_blue"
+                android:contentDescription="Video Icon" />
+
+            <TextView
+                android:id="@+id/video_session_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:text="Recorded Drill Session"
+                android:textColor="@color/words_blue"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_play_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Play Video"
+                android:textAllCaps="false"
+                app:icon="@drawable/play_button"
+                app:iconSize="18dp"
+                app:iconGravity="textStart"
+                app:backgroundTint="@color/words_blue" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/video_session_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Dec 8, 2025 14:30"
+            android:textSize="13sp"
+            android:textColor="@android:color/darker_gray" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <TextView
+                android:id="@+id/video_session_accuracy"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Accuracy: 75%"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/video_session_duration"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Duration: 2 min 05 sec"
+                android:textColor="@color/black"
+                android:textSize="14sp"
+                android:gravity="end" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/video_session_flaws"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Flaws: Minor head drop detected"
+            android:textColor="@color/red"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
