@@ -39,8 +39,8 @@ class SessionHistory : AppCompatActivity() {
     private val userId = auth.currentUser?.uid ?: "FALLBACK_UID"
 
     private val database by lazy { AppDatabase.getDatabase(applicationContext) }
-    private val repository by lazy { SessionRepository(database.sessionDao(), userId,db) }
     private val db by lazy { FirebaseFirestore.getInstance() }
+    private val repository by lazy { SessionRepository(database.sessionDao(), userId,db) }
     private val sessionViewModel: SessionViewModel by viewModels {
         SessionViewModelFactory(repository)
     }
@@ -204,10 +204,24 @@ class SessionHistory : AppCompatActivity() {
         val dateFilter = dateSpinner.selectedItem.toString()
         val typeFilter = sessionSpinner.selectedItem.toString()
 
-        val currentTime = System.currentTimeMillis()
-        val dayInMillis = TimeUnit.DAYS.toMillis(1)
-        val weekInMillis = TimeUnit.DAYS.toMillis(7)
-        val monthInMillis = TimeUnit.DAYS.toMillis(30)
+        // Helper to get start of day timestamps
+        val calendar = Calendar.getInstance()
+
+        // Today Start (00:00:00)
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        val startOfToday = calendar.timeInMillis
+
+        // This Month Start (1st of Month 00:00:00)
+        calendar.set(Calendar.DAY_OF_MONTH, 1)
+        val startOfThisMonth = calendar.timeInMillis
+
+        // Last Month Start
+        val startOfNextMonth = startOfThisMonth // Actually we can use this as upper bound
+        calendar.add(Calendar.MONTH, -1)
+        val startOfLastMonth = calendar.timeInMillis
 
         filteredSessions.clear()
 
@@ -220,21 +234,21 @@ class SessionHistory : AppCompatActivity() {
             // --- 2. Session Type Filter ---
             val matchesType = when (typeFilter) {
                 "All Sessions" -> true
-                "Drills" -> session.drillType.contains("Drill")
-                "Assessment" -> session.drillType.contains("Assessment")
+                "Drills" -> session.drillType.contains("Drill", ignoreCase = true)
+                "Assessment" -> session.drillType.contains("Assessment", ignoreCase = true)
                 "High Score" -> session.successRate > 0.85 // Example criteria
                 "Low Accuracy" -> session.successRate < 0.50 // Example criteria
                 else -> true
             }
 
             // --- 3. Date Filter ---
-            val timeElapsed = currentTime - session.dateMillis
             val matchesDate = when (dateFilter) {
                 "All Dates" -> true
-                "Today" -> timeElapsed < dayInMillis
-                "This Week" -> timeElapsed < weekInMillis
-                "This Month" -> timeElapsed < monthInMillis
-                "Last Month" -> timeElapsed in monthInMillis..(2 * monthInMillis)
+                "Today" -> session.dateMillis >= startOfToday
+                // For "This Week", let's use last 7 days as it's often more intuitive than calendar week for history
+                "This Week" -> session.dateMillis >= (System.currentTimeMillis() - TimeUnit.DAYS.toMillis(7))
+                "This Month" -> session.dateMillis >= startOfThisMonth
+                "Last Month" -> session.dateMillis >= startOfLastMonth && session.dateMillis < startOfThisMonth
                 else -> true
             }
 
