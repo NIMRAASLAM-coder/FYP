@@ -116,6 +116,7 @@ dependencies {
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx") 
     implementation("com.google.firebase:firebase-storage")
+    implementation("com.google.firebase:firebase-messaging")
     // Removed explicit exclude as updated BOM handles dependencies better
 
     // Google Services (for Google Sign-In)
@@ -136,11 +137,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
-//    val roomVersion = "2.6.1"
-//
-//    implementation("androidx.room:room-runtime:$roomVersion")
-//    kapt("androidx.room:room-compiler:$roomVersion")
-//    implementation("androidx.room:room-ktx:$roomVersion")
+
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
@@ -169,4 +166,3 @@ dependencies {
 //    implementation("androidx.camera:camera-view:1.0.0-alpha30")
 
 }
-
