@@ -1,9 +1,10 @@
 package com.fyp.nextshot
+
 data class User(
-    val uid: String = "", // The Firebase Authentication User ID
-    val fullName: String? = null,
-    val email: String? = null,
-    val dob: String? = null,
-    val experienceLevel: String? = null,
-    val profileImageUrl: String? = null // To store the cloud URL of the image
+    var uid: String = "", // The Firebase Authentication User ID
+    var fullName: String? = null,
+    var email: String? = null,
+    var dob: String? = null,
+    var experienceLevel: String? = null,
+    var profileImageUrl: String? = null // To store the cloud URL of the image
 )
