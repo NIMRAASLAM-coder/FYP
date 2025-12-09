@@ -2,6 +2,7 @@ package com.fyp.nextshot
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -10,7 +11,10 @@ import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.button.MaterialButton
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
 
 class Dashboard : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
@@ -41,6 +45,18 @@ class Dashboard : AppCompatActivity() {
 
         // Highlight current page in bottom navigation
         highlightBottomNavItem(navDashboard)
+
+
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val token = task.result
+                val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return@addOnCompleteListener
+                FirebaseFirestore.getInstance().collection("users").document(userId)
+                    .update("fcmToken", token)
+                Log.d("FCM_SAVE", "Manual token save: $token")
+            }
+        }
+
     }
 
     private fun initializeViews() {
@@ -164,17 +180,6 @@ class Dashboard : AppCompatActivity() {
         // Close the drawer after navigation
         drawerLayout.closeDrawer(GravityCompat.START)
     }
-
-//    private fun performSignOut() {
-//        // Clear any user data/preferences here if needed
-//        // For example: SharedPreferences, Firebase Auth, etc.
-//
-//        // Navigate to SignIn activity and clear the back stack
-//        val intent = Intent(this, SignIn::class.java)
-//        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-//        startActivity(intent)
-//        finish()
-//    }
 
     private fun highlightBottomNavItem(selectedView: View) {
         // Reset all items to normal state
