@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Semi-transparent white background -->
+    <solid android:color="#CCFFFFFF" />
+
+    <!-- Optional: thin white border -->
+    <stroke
+        android:width="3dp"
+        android:color="#FFFFFF" />
+
+    <!-- Rounded corners (not needed for circle, but safe) -->
+    <corners android:radius="100dp" />
+
+    <!-- Small padding inside so icon doesn't touch edge -->
+    <padding
+        android:left="8dp"
+        android:top="8dp"
+        android:right="8dp"
+        android:bottom="8dp" />
+</shape>
