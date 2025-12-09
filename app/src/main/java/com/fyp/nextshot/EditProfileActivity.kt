@@ -3,23 +3,40 @@ package com.fyp.nextshot
 import android.app.DatePickerDialog
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 import java.util.*
+import kotlin.collections.HashMap
 
-
-// ------------------------------------------------------------------------------------
+// NOTE: You must ensure you have a data class named 'User' defined elsewhere
+// (e.g., in data/local/models/) matching your Firestore document structure:
+/*
+data class User(
+    val uid: String = "",
+    val fullName: String? = null,
+    val email: String? = null,
+    val dob: String? = null,
+    val experienceLevel: String? = null,
+    val profileImageUrl: String? = null
+)
+*/
 
 class EditProfileActivity : AppCompatActivity() {
+
+    private val TAG = "EditProfileActivity"
 
     // Firebase instances
     private val auth by lazy { FirebaseAuth.getInstance() }
     private val db by lazy { FirebaseFirestore.getInstance() }
+    private val storage by lazy { FirebaseStorage.getInstance() }
     private val currentUserUid: String? = auth.currentUser?.uid
+
 
     // View initialization properties
     private lateinit var profileImage: ImageView
@@ -32,15 +49,15 @@ class EditProfileActivity : AppCompatActivity() {
     private lateinit var btnSave: Button
 
     // State for image handling
-    private var selectedImageUri: Uri? = null
-    private var currentProfileImageUrl: String? = null // To hold the existing image URL
+    private var selectedImageUri: Uri? = null // Holds the URI if a NEW image is selected
+    private var currentProfileImageUrl: String? = null // Holds the existing image URL from Firestore
 
     // Launcher for image picker
     private val pickImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             uri?.let {
                 selectedImageUri = it
-                // Preview the image using Glide
+                // Preview the new image immediately (GET operation for local preview)
                 Glide.with(this)
                     .load(it)
                     .circleCrop()
@@ -69,7 +86,11 @@ class EditProfileActivity : AppCompatActivity() {
         // 2. Set Listeners
         etDob.setOnClickListener { showDatePickerDialog() }
 
+        // Clicking the text or image launches the picker
         changePhoto.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+        profileImage.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
 
@@ -78,12 +99,12 @@ class EditProfileActivity : AppCompatActivity() {
         }
 
         btnSave.setOnClickListener {
-            saveUserProfile()
+            // CRITICAL: Call the function that handles image upload FIRST
+            uploadImageAndSaveProfile()
         }
     }
 
     private fun setupSpinner() {
-        // Experience levels (Make sure these match any array resource you might be using later)
         val levels = listOf(
             "Beginner level",
             "Intermediate level",
@@ -106,7 +127,6 @@ class EditProfileActivity : AppCompatActivity() {
         DatePickerDialog(
             this,
             { _, y, m, d ->
-                // Format the date (dd/mm/yyyy)
                 etDob.setText(String.format("%02d/%02d/%04d", d, m + 1, y))
             },
             year,
@@ -116,26 +136,21 @@ class EditProfileActivity : AppCompatActivity() {
     }
 
     /**
-     * Loads the existing profile data for the current user from Firebase Firestore.
-     * This handles the required Data Sync (GET) for persistence.
+     * Handles the required Data Sync (GET) for persistence and Image GET from URL.
      */
     private fun loadUserProfile() {
-        // Disable email editing if logged in via email/password, as it's the primary key.
         etEmail.isEnabled = false
 
         currentUserUid?.let { uid ->
-            // Fetch document from 'users' collection with the UID as the document ID
             db.collection("users").document(uid).get()
                 .addOnSuccessListener { document ->
                     if (document.exists()) {
                         val user = document.toObject(User::class.java)
                         user?.let {
-                            // Populate EditText fields
                             etName.setText(it.fullName)
                             etEmail.setText(it.email ?: auth.currentUser?.email)
                             etDob.setText(it.dob)
 
-                            // Populate Spinner
                             val levels = listOf(
                                 "Beginner level",
                                 "Intermediate level",
@@ -147,35 +162,92 @@ class EditProfileActivity : AppCompatActivity() {
                                 spinnerExperience.setSelection(index)
                             }
 
-                            // Load profile image from URL using Glide
+                            // Image GET (Retrieve URL and load via Glide)
                             it.profileImageUrl?.let { imageUrl ->
-                                currentProfileImageUrl = imageUrl // Store for potential re-use
+                                currentProfileImageUrl = imageUrl // Store existing URL
                                 Glide.with(this)
                                     .load(imageUrl)
                                     .circleCrop()
+                                    .placeholder(R.drawable.user) // Use a default icon
                                     .into(profileImage)
                             }
                         }
                     } else {
-                        // Document doesn't exist (first login), populate with available auth data
                         etEmail.setText(auth.currentUser?.email)
+                        Toast.makeText(this, "Profile not found. Creating new profile.", Toast.LENGTH_SHORT).show()
                     }
                 }
-                .addOnFailureListener {
-                    Toast.makeText(this, "Failed to load profile data. Check network.", Toast.LENGTH_SHORT).show()
+                .addOnFailureListener { e ->
+                    val specificError = e.message ?: "Unknown Network Failure"
+                    Log.e(TAG, "FAILED TO LOAD PROFILE: $specificError", e)
+
+                    Toast.makeText(this, "Failed to load profile data: $specificError", Toast.LENGTH_LONG).show()
                 }
         } ?: run {
-            // Handle case where user is somehow not authenticated
             Toast.makeText(this, "Authentication error. Please log in.", Toast.LENGTH_LONG).show()
             finish()
         }
     }
 
     /**
-     * Saves the updated profile data to Firebase Firestore.
-     * This handles the required Data Update/Insert (POST/PUT).
+     * Step 1: Checks if a new image was selected.
+     * Step 2: Uploads the new image (POST) to Firebase Storage using continueWithTask for robust URL retrieval.
+     * Step 3: Saves the profile data and the new URL to Firestore (UPDATE).
      */
-    private fun saveUserProfile() {
+    private fun uploadImageAndSaveProfile() {
+        val uid = currentUserUid ?: return
+        val imageUri = selectedImageUri
+
+        btnSave.isEnabled = false
+        btnSave.text = "Saving..."
+
+        if (imageUri != null) {
+            // Case 1: NEW image selected -> UPLOAD (POST) required
+            val profilePicRef = storage.reference.child("profile_images/$uid.jpg")
+            
+            Log.d(TAG, "Starting upload to: ${profilePicRef.path}")
+            
+            val uploadTask = profilePicRef.putFile(imageUri)
+
+            // Chain the upload and getDownloadUrl tasks. 
+            // This prevents race conditions where downloadUrl is called before upload completes.
+            uploadTask.continueWithTask { task ->
+                if (!task.isSuccessful) {
+                    // This handles errors during the upload itself (putFile)
+                    task.exception?.let {
+                        throw it
+                    }
+                }
+                // Upload success, now request download URL
+                profilePicRef.downloadUrl
+            }.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val downloadUri = task.result
+                    val newImageUrl = downloadUri.toString()
+                    Log.d(TAG, "Image upload and URL retrieval success: $newImageUrl")
+                    saveProfileData(newImageUrl)
+                } else {
+                    // This handles errors from either upload or downloadUrl
+                    val e = task.exception
+                    Log.e(TAG, "Upload/Url failed: ${e?.message}", e)
+                    
+                    // Specific feedback for the user
+                    Toast.makeText(this, "Upload failed: ${e?.message}", Toast.LENGTH_LONG).show()
+                    
+                    btnSave.isEnabled = true
+                    btnSave.text = "Save"
+                }
+            }
+        } else {
+            // Case 2: NO new image selected -> No POST required, just UPDATE profile data
+            saveProfileData(currentProfileImageUrl) 
+        }
+    }
+
+    /**
+     * Final step: Saves text data and the finalized image URL (UPDATE).
+     */
+    private fun saveProfileData(imageUrl: String?) {
         val name = etName.text.toString().trim()
         val email = etEmail.text.toString().trim()
         val dob = etDob.text.toString().trim()
@@ -184,30 +256,33 @@ class EditProfileActivity : AppCompatActivity() {
 
         if (name.isEmpty() || dob.isEmpty()) {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            btnSave.isEnabled = true
+            btnSave.text = "Save"
             return
         }
 
-
-        // IMPORTANT: In the next step (Step 3), we will wrap this saving logic
-        // with the image upload process. For now, we save only the text fields.
-
         val userUpdates = User(
-            uid = currentUserUid!!,
+            uid = uid,
             fullName = name,
             email = email,
             dob = dob,
             experienceLevel = experience,
-            profileImageUrl = currentProfileImageUrl // Keep existing image URL for now
+            profileImageUrl = imageUrl // Final image URL (new or existing)
         )
 
-        currentUserUid?.let { uid ->
-            db.collection("users").document(uid).set(userUpdates) // Use set() to create/update
-                .addOnSuccessListener {
-                    Toast.makeText(this, "Profile updated successfully!", Toast.LENGTH_SHORT).show()
-                }
-                .addOnFailureListener { e ->
-                    Toast.makeText(this, "Error saving profile: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-        }
+        // UPDATE operation on Firestore
+        db.collection("users").document(uid).set(userUpdates) // Use set() to create/update
+            .addOnSuccessListener {
+                Toast.makeText(this, "Profile and image saved successfully!", Toast.LENGTH_SHORT).show()
+                finish() // Close activity on success
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Error saving profile: ${e.message}")
+                Toast.makeText(this, "Error saving profile: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+            .addOnCompleteListener {
+                btnSave.isEnabled = true
+                btnSave.text = "Save"
+            }
     }
 }
