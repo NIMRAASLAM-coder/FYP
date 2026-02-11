@@ -30,6 +30,8 @@ class SessionAdapter(
         val sessionShots: TextView = itemView.findViewById(R.id.session_shots)
         val btnViewAnalysis: MaterialButton = itemView.findViewById(R.id.btn_view_analysis)
         val btnShare: MaterialButton = itemView.findViewById(R.id.btn_share)
+        val analysisSummaryLayout: View = itemView.findViewById(R.id.analysis_summary_layout)
+        val tvAnalysisDetails: TextView = itemView.findViewById(R.id.tv_analysis_details)
 
         // 2. Change bind parameter type
         fun bind(session: SessionEntity) {
@@ -62,6 +64,14 @@ class SessionAdapter(
 
             btnShare.setOnClickListener {
                 onShareClick(session)
+            }
+
+            // Bind Analysis Details
+            if (session.drillType == "Pose Analysis" && session.flawDetails != null) {
+                analysisSummaryLayout.visibility = View.VISIBLE
+                tvAnalysisDetails.text = session.flawDetails
+            } else {
+                analysisSummaryLayout.visibility = View.GONE
             }
         }
     }

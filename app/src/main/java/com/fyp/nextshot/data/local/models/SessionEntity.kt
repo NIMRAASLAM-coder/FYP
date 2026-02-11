@@ -7,12 +7,12 @@ import androidx.room.PrimaryKey
 data class SessionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val userId: String, // To link it to the currently logged-in Firebase user
+    val userId: String = "", // Default value for Firestore
     val cloudDocumentId: String = "",
     val dateMillis: Long = System.currentTimeMillis(),
-    val drillType: String,
-    val durationSeconds: Int,
-    val successRate: Double,
+    val drillType: String = "",
+    val durationSeconds: Int = 0,
+    val successRate: Double = 0.0,
     // Store flaws as a single String for simplicity now
-    val flawDetails: String?
+    val flawDetails: String? = null
 )
