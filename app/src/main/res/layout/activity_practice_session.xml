@@ -54,7 +54,8 @@
             <androidx.camera.view.PreviewView
                 android:id="@+id/preview_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                app:scaleType="fitCenter" />
 
             <com.fyp.nextshot.BoundingBoxOverlay
                 android:id="@+id/bbox_overlay"
@@ -80,36 +81,40 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <TextView
-                    android:id="@+id/tv_head_stability"
+                <!-- TextViews moved to top right -->
+
+                <!-- Buttons Row -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Head Stability: --"
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:gravity="center"
-                    android:layout_marginBottom="8dp" />
-
-                <TextView
-                    android:id="@+id/tv_weight_balance"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Weight: Calculating..."
-                    android:textColor="@android:color/white"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:gravity="center" />
-
-                <Button
-                    android:id="@+id/btn_upload_video"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:orientation="horizontal"
                     android:layout_marginTop="20dp"
-                    android:text="UPLOAD VIDEO"
-                    android:textStyle="bold"
-                    android:backgroundTint="#FF6200EE"
-                    app:cornerRadius="28dp" />
+                    android:gravity="center">
+
+                    <Button
+                        android:id="@+id/btn_upload_video"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="56dp"
+                        android:text="UPLOAD"
+                        android:textStyle="bold"
+                        android:backgroundTint="#FF6200EE"
+                        app:cornerRadius="28dp" />
+
+                    <Space
+                        android:layout_width="16dp"
+                        android:layout_height="wrap_content" />
+
+                    <Button
+                        android:id="@+id/btn_live_record"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="56dp"
+                        android:text="LIVE"
+                        android:textStyle="bold"
+                        android:backgroundTint="#FF0000"
+                        app:cornerRadius="28dp" />
+                </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -154,6 +159,77 @@
                     android:layout_height="32dp"
                     android:src="@drawable/ic_profile"
                     app:tint="@color/words_blue" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- New Analysis Results Box (Top Right) -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/analysis_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="#E6F2FF"
+            app:layout_constraintTop_toBottomOf="@id/top_bar_card"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:id="@+id/tv_head_stability"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Head: --"
+                    android:textColor="#004E89"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tv_shoulders"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shoulders: --"
+                    android:textColor="#004E89"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tv_weight_balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Weight: --"
+                    android:textColor="#004E89"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/tv_footwork"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Feet: --"
+                    android:textColor="#004E89"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <Button
+                    android:id="@+id/btn_save_session"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="SAVE SESSION"
+                    android:textSize="10sp"
+                    android:paddingHorizontal="8dp"
+                    android:backgroundTint="#004E89"
+                    app:cornerRadius="8dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
