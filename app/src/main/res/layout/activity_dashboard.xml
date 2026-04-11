@@ -54,6 +54,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/welcome_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Welcome Player!"
@@ -71,6 +72,7 @@
                 </LinearLayout>
 
                 <ImageView
+                    android:id="@+id/top_profile_image"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:src="@drawable/img_7"

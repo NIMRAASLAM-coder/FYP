@@ -5,11 +5,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.bumptech.glide.Glide
 import com.google.android.material.button.MaterialButton
 import com.google.firebase.messaging.FirebaseMessaging
 import com.google.android.material.navigation.NavigationView
@@ -30,6 +33,13 @@ class Dashboard : AppCompatActivity() {
     // Start button
     private lateinit var startButton: MaterialButton
 
+    // Profile views
+    private lateinit var topProfileImage: ImageView
+    private lateinit var welcomeText: TextView
+    private lateinit var headerProfileImage: ImageView
+    private lateinit var headerUserName: TextView
+    private lateinit var headerUserEmail: TextView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_dashboard)
@@ -46,6 +56,8 @@ class Dashboard : AppCompatActivity() {
         // Highlight current page in bottom navigation
         highlightBottomNavItem(navDashboard)
 
+        // Load user data (Profile Pic, Name, etc.)
+        loadUserData()
 
         FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -56,7 +68,6 @@ class Dashboard : AppCompatActivity() {
                 Log.d("FCM_SAVE", "Manual token save: $token")
             }
         }
-
     }
 
     private fun initializeViews() {
@@ -72,6 +83,43 @@ class Dashboard : AppCompatActivity() {
 
         // Start button
         startButton = findViewById(R.id.start)
+
+        // Top bar profile views
+        topProfileImage = findViewById(R.id.top_profile_image)
+        welcomeText = findViewById(R.id.welcome_text)
+
+        // Navigation drawer header views
+        val headerView = navigationView.getHeaderView(0)
+        headerProfileImage = headerView.findViewById(R.id.profile_image)
+        headerUserName = headerView.findViewById(R.id.user_name)
+        headerUserEmail = headerView.findViewById(R.id.user_email)
+    }
+
+    private fun loadUserData() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val uid = currentUser?.uid ?: return
+
+        FirebaseFirestore.getInstance().collection("users").document(uid)
+            .get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val user = document.toObject(User::class.java)
+                    user?.let {
+                        // Update UI with user data
+                        val displayName = it.fullName ?: "Player"
+                        welcomeText.text = "Welcome $displayName!"
+                        headerUserName.text = displayName
+                        headerUserEmail.text = it.email ?: currentUser.email
+
+                        // Load Profile Image using the new Utility
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, topProfileImage, R.drawable.img_7)
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, headerProfileImage, R.drawable.img_21)
+                    }
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("Dashboard", "Error loading user data", e)
+            }
     }
 
     private fun setupToolbarAndDrawer() {
@@ -118,6 +166,12 @@ class Dashboard : AppCompatActivity() {
 
         navTips.setOnClickListener {
             navigateToTips()
+        }
+        
+        // Clicking top profile image also goes to profile
+        topProfileImage.setOnClickListener {
+            val intent = Intent(this, EditProfileActivity::class.java)
+            startActivity(intent)
         }
     }
 
@@ -198,5 +252,9 @@ class Dashboard : AppCompatActivity() {
         selectedTextView?.setTypeface(null, android.graphics.Typeface.BOLD)
     }
 
-
+    override fun onResume() {
+        super.onResume()
+        // Refresh user data when returning to dashboard (e.g. after editing profile)
+        loadUserData()
+    }
 }
