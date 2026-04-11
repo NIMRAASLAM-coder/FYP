@@ -20,4 +20,9 @@
         </item> <!-- This sets the line color to white -->
         <item name="strokeWidth">1dp</item>
     </style>
+
+    <style name="TransparentDialog" parent="Theme.Material3.DayNight.Dialog">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsFloating">true</item>
+    </style>
 </resources>

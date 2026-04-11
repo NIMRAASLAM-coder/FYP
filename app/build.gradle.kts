@@ -80,14 +80,12 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
-    // implementation("com.google.android.material:material:1.11.0") // Redundant with libs.material
 
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
 
     // Image Loading (Glide)
     implementation("com.github.bumptech.glide:glide:4.16.0")
-    // implementation(libs.firebase.auth) // Removed to avoid conflict with BOM
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
     implementation(libs.googleid)
@@ -101,27 +99,23 @@ dependencies {
     // Guava (for ListenableFuture) - Needed by CameraX
     implementation("com.google.guava:guava:33.0.0-android")
 
-    // Downgraded to 4.12.0 to resolve Kotlin metadata version incompatibility
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
-
 
     // Navigation
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
 
-    // Firebase Bill of Materials (BOM) - Updated to fix conflicts
+    // Firebase Bill of Materials (BOM)
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
 
-    // Firebase Libraries (Rely on BOM version)
+    // Firebase Libraries
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx") 
     implementation("com.google.firebase:firebase-storage")
     implementation("com.google.firebase:firebase-messaging")
-    // Removed explicit exclude as updated BOM handles dependencies better
 
-    // Google Services (for Google Sign-In)
+    // Google Services
     implementation("com.google.android.gms:play-services-auth:20.7.0")
-
     implementation("com.google.code.gson:gson:2.10.1")
 
     // Testing
@@ -129,28 +123,20 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // Retrofit + Gson converter
+    // Retrofit
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-//// OkHttp (optional: logging)
-//    implementation("com.squareup.okhttp3:okhttp:4.11.0")
-//    implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
-// Coroutines (recommended later for async calls)
+
+    // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
-
-
-
-    implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.room.ktx)
-
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     kapt(libs.androidx.room.compiler)
-
     kapt("org.jetbrains.kotlinx:kotlinx-metadata-jvm:0.9.0")
-    // CameraX dependencies
+
+    // CameraX
     val cameraXVersion = "1.3.1"
     implementation("androidx.camera:camera-core:$cameraXVersion")
     implementation("androidx.camera:camera-camera2:$cameraXVersion")
@@ -159,12 +145,6 @@ dependencies {
     implementation("androidx.camera:camera-video:1.3.4")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
-
-//
-//    implementation("androidx.camera:camera-core:1.1.0")
-//    implementation("androidx.camera:camera-camera2:1.1.0")
-//    implementation("androidx.camera:camera-lifecycle:1.1.0")
-//    implementation("androidx.camera:camera-video:1.1.0")
-//    implementation("androidx.camera:camera-view:1.0.0-alpha30")
-
+    // YouTube Player Library
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
 }
