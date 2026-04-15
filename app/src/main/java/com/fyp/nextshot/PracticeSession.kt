@@ -866,6 +866,9 @@ class PracticeSession : AppCompatActivity() {
 
         val durationSeconds = ((System.currentTimeMillis() - sessionStartTime) / 1000).toInt().coerceAtLeast(30)
 
+        // Calculate average success rate (0.0 to 1.0)
+        val avgSuccess = (headStabilityScore + shoulderScore + weightScore + footworkScore) / 400.0
+
         // Final Analysis Summary
         val summary = "Head: $headStatus | Shoulders: $shoulderStatus | Weight: $weightShiftText | Feet: $footworkStatus"
 
@@ -873,7 +876,7 @@ class PracticeSession : AppCompatActivity() {
             userId = userId,
             drillType = "Pose Analysis",
             durationSeconds = durationSeconds,
-            successRate = 1.0, // Default for now
+            successRate = avgSuccess,
             flawDetails = summary,
             dateMillis = System.currentTimeMillis()
         )

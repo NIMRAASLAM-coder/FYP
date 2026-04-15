@@ -221,6 +221,7 @@
                                 android:layout_marginEnd="12dp">
 
                                 <ProgressBar
+                                    android:id="@+id/progress_head"
                                     android:layout_width="match_parent"
                                     android:layout_height="8dp"
                                     android:max="100"
@@ -230,6 +231,7 @@
                             </FrameLayout>
 
                             <TextView
+                                android:id="@+id/tv_head_percentage"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="25%"
@@ -295,6 +297,7 @@
                                 android:layout_marginEnd="12dp">
 
                                 <ProgressBar
+                                    android:id="@+id/progress_shoulders"
                                     android:layout_width="match_parent"
                                     android:layout_height="8dp"
                                     android:max="100"
@@ -304,6 +307,7 @@
                             </FrameLayout>
 
                             <TextView
+                                android:id="@+id/tv_shoulders_percentage"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="40%"
@@ -314,7 +318,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Flaw 3: Backlift -->
+                <!-- Flaw 3: Backlift (Weight Balance in Analysis) -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -334,7 +338,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Backlift"
+                            android:text="Weight Balance"
                             android:textColor="@color/words_blue"
                             android:textSize="16sp"
                             android:textStyle="bold"
@@ -343,7 +347,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Proper bat lift height and timing before shot"
+                            android:text="Maintain center of gravity and weight distribution"
                             android:textColor="@color/black"
                             android:textSize="13sp"
                             android:layout_marginBottom="12dp" />
@@ -369,6 +373,7 @@
                                 android:layout_marginEnd="12dp">
 
                                 <ProgressBar
+                                    android:id="@+id/progress_weight"
                                     android:layout_width="match_parent"
                                     android:layout_height="8dp"
                                     android:max="100"
@@ -378,6 +383,7 @@
                             </FrameLayout>
 
                             <TextView
+                                android:id="@+id/tv_weight_percentage"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="35%"
@@ -388,81 +394,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Flaw 4: Knee Flexion -->
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp"
-                    app:strokeColor="@android:color/transparent"
-                    app:cardBackgroundColor="@color/white">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Knee Flexion"
-                            android:textColor="@color/words_blue"
-                            android:textSize="16sp"
-                            android:textStyle="bold"
-                            android:layout_marginBottom="4dp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Proper knee bend and weight transfer during shots"
-                            android:textColor="@color/black"
-                            android:textSize="13sp"
-                            android:layout_marginBottom="12dp" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Overall Improvement"
-                                android:textColor="@color/black"
-                                android:textSize="13sp"
-                                android:layout_marginEnd="16dp" />
-
-                            <FrameLayout
-                                android:layout_width="0dp"
-                                android:layout_height="8dp"
-                                android:layout_weight="1"
-                                android:layout_marginEnd="12dp">
-
-                                <ProgressBar
-                                    android:layout_width="match_parent"
-                                    android:layout_height="8dp"
-                                    android:max="100"
-                                    android:progress="50"
-                                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                                    android:progressDrawable="@drawable/progress_bar_rounded" />
-                            </FrameLayout>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="50%"
-                                android:textColor="@color/words_blue"
-                                android:textSize="14sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Flaw 5: Foot Placement -->
+                <!-- Flaw 4: Foot Placement -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -517,6 +449,7 @@
                                 android:layout_marginEnd="12dp">
 
                                 <ProgressBar
+                                    android:id="@+id/progress_feet"
                                     android:layout_width="match_parent"
                                     android:layout_height="8dp"
                                     android:max="100"
@@ -526,6 +459,7 @@
                             </FrameLayout>
 
                             <TextView
+                                android:id="@+id/tv_feet_percentage"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="30%"
