@@ -2,25 +2,51 @@ package com.fyp.nextshot
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.MenuItem
+import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class TipsForAll : AppCompatActivity() {
 
-    private lateinit var navDashboard: LinearLayout
-    private lateinit var navPractice: LinearLayout
-    private lateinit var navProgress: LinearLayout
-    private lateinit var navTips: LinearLayout
+    private lateinit var drawerLayout: DrawerLayout
+    private lateinit var navView: NavigationView
+    private lateinit var topProfileImage: ImageView
+    private lateinit var toolbar: androidx.appcompat.widget.Toolbar
+    
+    private val auth by lazy { FirebaseAuth.getInstance() }
+    private val db by lazy { FirebaseFirestore.getInstance() }
+
+    private lateinit var navDashboard: View
+    private lateinit var navPractice: View
+    private lateinit var navProgress: View
+    private lateinit var navTips: View
 
     private lateinit var tabForYou: MaterialButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tips_for_all)
+
+        drawerLayout = findViewById(R.id.drawer_layout)
+        navView = findViewById(R.id.nav_view)
+        topProfileImage = findViewById(R.id.profile_image)
+        toolbar = findViewById(R.id.menu)
+        
+        setupToolbarAndDrawer()
 
         navDashboard = findViewById(R.id.dash)
         navPractice = findViewById(R.id.practice)
@@ -30,34 +56,7 @@ class TipsForAll : AppCompatActivity() {
 
         // --- RecyclerView Setup ---
         val tipsList = mutableListOf<Tip>()
-
-        // --- Data Population ---
-        // Cover Drive
-        tipsList.add(Tip("Mastering the Cover Drive - Part 1", "Learn the basics of the cover drive shot.", "Cover Drive", "https://youtu.be/TSxJVw57jqs?si=QEBLEXA-mXhsgobp"))
-        tipsList.add(Tip("Mastering the Cover Drive - Part 2", "Advanced techniques for the cover drive.", "Cover Drive", "https://youtu.be/nPBgrDjRCcg?si=O3X7NulnYARIvior"))
-        tipsList.add(Tip("Cover Drive Footwork", "Improving your foot movement for the cover drive.", "Cover Drive", "https://youtu.be/2x48B3rppP4?si=Ucypt0P5C-hUfiJp"))
-        tipsList.add(Tip("Quick Tip: Cover Drive", "Short guidance on perfect timing.", "Cover Drive", "https://youtube.com/shorts/hdtNGJX5Eo0?si=_EusMbs1QNX05orK"))
-        tipsList.add(Tip("Cover Drive Mastery", "Full guide to mastering the drive.", "Cover Drive", "https://www.youtube.com/watch?v=h3N-BRQXTS4"))
-
-        // Straight Shot
-        tipsList.add(Tip("The Perfect Straight Drive", "Technique for hitting it straight down the ground.", "Straight Shot", "https://youtu.be/cKB8qrRrSJQ?si=VTgatogZRZUxk4xq"))
-        tipsList.add(Tip("Straight Shot Precision", "Focus on head position for straight shots.", "Straight Shot", "https://youtu.be/ASskVkjHsAU?si=oh4kC9cJGd8Aa7vK"))
-        tipsList.add(Tip("Straight Drive Drills", "Effective drills for your straight drive.", "Straight Shot", "https://youtu.be/IRVcM9XdTXY?si=-PFXcB3vqC2b_qic"))
-        tipsList.add(Tip("Power in Straight Shots", "How to generate more power in your straight drives.", "Straight Shot", "https://youtu.be/eOqhRgUPLcg?si=UW7vX_K7HRjjBJ_V"))
-        tipsList.add(Tip("Straight Shot Basics", "Simple steps for beginners.", "Straight Shot", "https://youtu.be/Fpjp2o2arVs?si=LoBvXzqk1SFDOJbO"))
-
-        // Forward Defensive
-        tipsList.add(Tip("Forward Defensive Technique", "The ultimate guide to the forward defensive stroke.", "Forward Defensive", "https://youtu.be/CdlYCoqUVEQ?si=tcczdt9RXyv5ftDH"))
-        tipsList.add(Tip("Solid Defense", "Building a rock-solid forward defense.", "Forward Defensive", "https://youtu.be/pEy8-o7nwek?si=RiE5Kh14JXbwujnv"))
-        tipsList.add(Tip("Defensive Footwork", "Short clip on defensive foot movement.", "Forward Defensive", "https://youtube.com/shorts/Xm-LMxACZMQ?si=c9o_pSuEvkmUzQFo"))
-        tipsList.add(Tip("Defense Against Spin", "Playing the forward defensive against spinners.", "Forward Defensive", "https://youtu.be/0ZhXvTzVr0s?si=KskvREX6IkVI35nj"))
-        tipsList.add(Tip("Defensive Drills", "Practice these drills to improve your defense.", "Forward Defensive", "https://youtu.be/mULeuQ6XgUA?si=FvWC2U1D47ndGkhU"))
-        tipsList.add(Tip("Soft Hands in Defense", "Learn how to play with soft hands.", "Forward Defensive", "https://youtu.be/sKIwkvdAyJU?si=68-RNygfJStFFzfW"))
-        tipsList.add(Tip("Advanced Defense", "Taking your forward defensive to the next level.", "Forward Defensive", "https://youtu.be/Bxq1ZyjwBh4?si=1wBhBE32PxJCPIg_"))
-
-        // Mixture of shots
-        tipsList.add(Tip("Cricket Batting Masterclass", "A variety of shots and when to play them.", "Mixed Shots", "https://youtu.be/Gy_MjikAnhw?si=hR_Ea0QkmHbrx-gl"))
-        tipsList.add(Tip("All-round Batting Drills", "Drills covering multiple shots.", "Mixed Shots", "https://youtu.be/KY8gsVeKn0w?si=nBpihlcpdmyrw24Z"))
+        populateTips(tipsList)
 
         val recyclerView = findViewById<RecyclerView>(R.id.tips_recycler_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -72,10 +71,73 @@ class TipsForAll : AppCompatActivity() {
         tabForYou.setOnClickListener {
             startActivity(Intent(this, TipsForYou::class.java))
             finish()
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
 
         setupBottomNavigation()
         setupBackPressHandler()
+        loadUserData()
+
+        // Highlight current page
+        highlightBottomNavItem(navTips)
+        
+        topProfileImage.setOnClickListener {
+            startActivity(Intent(this, EditProfileActivity::class.java))
+        }
+    }
+
+    private fun setupToolbarAndDrawer() {
+        setSupportActionBar(toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            drawerLayout,
+            toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
+
+        drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        navView.setNavigationItemSelectedListener { menuItem ->
+            handleDrawerNavigation(menuItem)
+            true
+        }
+    }
+
+    private fun loadUserData() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val user = document.toObject(User::class.java)
+                    user?.let {
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, topProfileImage, R.drawable.img_7)
+                        
+                        val headerView = navView.getHeaderView(0)
+                        val headerProfileImage = headerView.findViewById<ImageView>(R.id.profile_image)
+                        val headerUserName = headerView.findViewById<TextView>(R.id.user_name)
+                        val headerUserEmail = headerView.findViewById<TextView>(R.id.user_email)
+                        val headerUserAge = headerView.findViewById<TextView>(R.id.user_age)
+                        val headerUserExperience = headerView.findViewById<TextView>(R.id.user_experience)
+                        
+                        headerUserName.text = it.fullName ?: "Player"
+                        headerUserEmail.text = it.email ?: auth.currentUser?.email
+                        headerUserAge.text = ProfileUtils.calculateAge(it.dob)
+                        headerUserExperience.text = it.experienceLevel ?: "Experience: N/A"
+
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, headerProfileImage, R.drawable.img_21)
+                    }
+                }
+            }
+    }
+
+    private fun populateTips(tipsList: MutableList<Tip>) {
+        tipsList.add(Tip("Mastering the Cover Drive - Part 1", "Basics of the cover drive shot.", "Cover Drive", "https://youtu.be/TSxJVw57jqs"))
+        tipsList.add(Tip("The Perfect Straight Drive", "Technique for hitting it straight.", "Straight Shot", "https://youtu.be/cKB8qrRrSJQ"))
+        tipsList.add(Tip("Forward Defensive Technique", "Guide to the forward defensive stroke.", "Forward Defensive", "https://youtu.be/CdlYCoqUVEQ"))
     }
 
     private fun setupBottomNavigation() {
@@ -92,16 +154,74 @@ class TipsForAll : AppCompatActivity() {
             finish()
         }
         navTips.setOnClickListener {
-             // Already on Tips screen
+            highlightBottomNavItem(navTips)
+        }
+    }
+
+    private fun highlightBottomNavItem(selectedView: View) {
+        listOf(navDashboard, navPractice, navProgress, navTips).forEach { view ->
+            view.isActivated = (view == selectedView)
+            val textView = (view as? android.view.ViewGroup)?.getChildAt(1) as? android.widget.TextView
+            val imageView = (view as? android.view.ViewGroup)?.getChildAt(0) as? android.widget.ImageView
+            
+            if (view == selectedView) {
+                textView?.setTypeface(null, android.graphics.Typeface.BOLD)
+                textView?.setTextColor(getColor(R.color.white))
+                imageView?.setColorFilter(getColor(R.color.white))
+                textView?.alpha = 1f
+                imageView?.alpha = 1f
+            } else {
+                textView?.setTypeface(null, android.graphics.Typeface.NORMAL)
+                textView?.setTextColor(getColor(R.color.white))
+                textView?.alpha = 0.7f
+                imageView?.setColorFilter(getColor(R.color.white))
+                imageView?.alpha = 0.7f
+            }
         }
     }
 
     private fun setupBackPressHandler() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                startActivity(Intent(this@TipsForAll, Dashboard::class.java))
-                finish()
+                if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                    drawerLayout.closeDrawer(GravityCompat.START)
+                } else {
+                    startActivity(Intent(this@TipsForAll, Dashboard::class.java))
+                    finish()
+                }
             }
         })
+    }
+
+    private fun handleDrawerNavigation(menuItem: MenuItem) {
+        when (menuItem.itemId) {
+            R.id.nav_dashboard -> {
+                startActivity(Intent(this, Dashboard::class.java))
+                finish()
+            }
+            R.id.nav_practice -> {
+                startActivity(Intent(this, PracticeSession::class.java))
+                finish()
+            }
+            R.id.nav_progress -> {
+                startActivity(Intent(this, Progress::class.java))
+                finish()
+            }
+            R.id.nav_tips -> {
+                // Already here
+            }
+            R.id.profile -> startActivity(Intent(this, EditProfileActivity::class.java))
+            R.id.notification -> startActivity(Intent(this, NotificationActivity::class.java))
+            R.id.session_history -> startActivity(Intent(this, SessionHistory::class.java))
+            R.id.AI -> startActivity(Intent(this, AICoachingChat::class.java))
+            R.id.settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.signout -> startActivity(Intent(this, SignOutConfirmationActivity::class.java))
+        }
+        drawerLayout.closeDrawer(GravityCompat.START)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadUserData()
     }
 }

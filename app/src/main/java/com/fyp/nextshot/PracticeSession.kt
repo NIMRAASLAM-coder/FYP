@@ -92,7 +92,10 @@ class PracticeSession : AppCompatActivity() {
     // ANALYSIS STATE
     private var prevHeadCenterGlobal: Pair<Float, Float>? = null
     private var headStabilityScore = 100f
-    private var weightShiftText = "neutral"
+    private var shoulderScore = 100f
+    private var weightScore = 100f
+    private var footworkScore = 100f
+    private var weightShiftText = "100%"
     private var isBalanced = true
     private var isProcessing = false
 
@@ -100,15 +103,17 @@ class PracticeSession : AppCompatActivity() {
     private val headHistory = java.util.ArrayDeque<Pair<Float, Float>>()
     private val HISTORY_SIZE = 10
     private var lastFootPosition: Pair<Float, Float>? = null
-    private var footworkStatus = "Planted"
-    private var shoulderStatus = "Stable"
-    private var headStatus = "Stable"
+    private var footworkStatus = "100%"
+    private var shoulderStatus = "100%"
+    private var headStatus = "100%"
 
     // Persistence Counters (Damping)
-    private var headUnstableCount = 0
-    private var shoulderLeftCount = 0
-    private var shoulderRightCount = 0
-    private val PERSISTENCE_THRESHOLD = 5 // Frames before reporting change
+    private var headBadCount = 0
+    private var shoulderBadCount = 0
+    private var weightBadCount = 0
+    private var footworkBadCount = 0
+    private val PERSISTENCE_FRAMES = 15 // ~1 second before registering flaw
+    private val MAX_PERSISTENCE = 30
 
     // Session Management
     private val auth by lazy { FirebaseAuth.getInstance() }
@@ -379,10 +384,10 @@ class PracticeSession : AppCompatActivity() {
                 // Update Analysis UI for Video
                 if (bestDetection != null) {
                     analyzePose(bestDetection)
-                    headTv.text = "Head: $headStatus"
-                    shouldersTv.text = "Shoulders: $shoulderStatus"
-                    weightTv.text = "Weight: $weightShiftText"
-                    feetTv.text = "Feet: $footworkStatus"
+                    headTv.text = "$headStatus"
+                    shouldersTv.text = "$shoulderStatus"
+                    weightTv.text = "$weightShiftText"
+                    feetTv.text = "$footworkStatus"
                 }
 
             } catch (e: Exception) {
@@ -425,7 +430,6 @@ class PracticeSession : AppCompatActivity() {
     private fun enterLiveMode() {
         // Stop video
         if (videoView.isPlaying) videoView.stopPlayback()
-        if (videoView.isPlaying) videoView.stopPlayback()
         isVideoPlaying = false
         isLiveMode = true
         resetAnalysisState()
@@ -434,6 +438,10 @@ class PracticeSession : AppCompatActivity() {
 
         // Show camera
         cameraContainer.visibility = View.VISIBLE
+
+        // Mirror video mode: pre-initialise the overlay size so it can render
+        // even before the first Roboflow response arrives.
+        cameraOverlay.setImageSize(640, 480)
 
         Toast.makeText(this, "Live Mode Active", Toast.LENGTH_SHORT).show()
     }
@@ -458,17 +466,32 @@ class PracticeSession : AppCompatActivity() {
         val bitmap = proxy.toBitmap()
         val rotated = rotateBitmap(bitmap, proxy.imageInfo.rotationDegrees.toFloat())
 
-        // Asynchronously process
-        processBitmapFrame(rotated, timestamp)
+        // Pass the real rotated dimensions so the overlay and parser stay in sync.
+        // Do NOT recycle `rotated` here — processBitmapFrame will handle it.
+        processBitmapFrame(rotated, timestamp, rotated.width, rotated.height)
         proxy.close()
     }
 
-    private fun processBitmapFrame(bitmap: Bitmap, timestamp: Long = 0L) {
+    /**
+     * @param frameW  width  of the bitmap actually sent to Roboflow (after rotation)
+     * @param frameH  height of the bitmap actually sent to Roboflow (after rotation)
+     *
+     * We keep these as parameters so the parser and the overlay always agree on the
+     * coordinate space — the same fix that makes the video pipeline work correctly.
+     */
+    private fun processBitmapFrame(
+        bitmap: Bitmap,
+        timestamp: Long = 0L,
+        frameW: Int = 640,
+        frameH: Int = 480
+    ) {
         pendingRequests.incrementAndGet()
 
-        val resized = Bitmap.createScaledBitmap(bitmap, 640, 480, true)
+        // Scale to exactly the dimensions we will tell Roboflow / the overlay about.
+        // Using the REAL aspect ratio avoids distortion that shifts keypoint positions.
+        val resized = Bitmap.createScaledBitmap(bitmap, frameW, frameH, true)
         val base64 = bitmapToBase64(resized)
-        resized.recycle()
+        if (resized !== bitmap) resized.recycle()
 
         val jsonPayload = """
         {
@@ -487,7 +510,7 @@ class PracticeSession : AppCompatActivity() {
             .post(jsonPayload.toRequestBody("application/json".toMediaType()))
             .build()
 
-        Log.d(TAG, "Sending frame to Roboflow… (${base64.length} chars)")
+        Log.d(TAG, "Sending frame to Roboflow… (${base64.length} chars, ${frameW}x${frameH})")
 
         client.newCall(request).enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
@@ -498,26 +521,20 @@ class PracticeSession : AppCompatActivity() {
             override fun onResponse(call: Call, response: Response) {
                 val responseBody = response.body?.string() ?: ""
 
-                if (false) { // Disable verbose logs for live mode optimization
-                    try {
-                        // ... log parsing ...
-                    } catch (e: Exception) {}
-                }
-
                 // Only update if this frame is newer than what's currently shown
-                // (For video sync, timestamp is 0, so we ignore logic)
+                // (For video sync, timestamp is 0, so we ignore)
                 if (timestamp > 0) {
                     if (sessionStartTime == 0L) sessionStartTime = System.currentTimeMillis()
                     if (timestamp > lastProcessedTimestamp) {
                         lastProcessedTimestamp = timestamp
-                        parseRoboflowResponse(responseBody, 640, 480)
+                        // ✅ Pass the SAME dimensions used when encoding the frame
+                        parseRoboflowResponse(responseBody, frameW, frameH)
                     } else {
-                        // Drop out-of-order frame
                         Log.d(TAG, "Dropping old frame")
                     }
                 } else {
-                    // Legacy/Video path (if used)
-                    parseRoboflowResponse(responseBody, 640, 480)
+                    // Legacy/Video path
+                    parseRoboflowResponse(responseBody, frameW, frameH)
                 }
 
                 pendingRequests.decrementAndGet()
@@ -625,10 +642,10 @@ class PracticeSession : AppCompatActivity() {
             // Update Analysis UI
             if (lastDetection != null) {
                 analyzePose(lastDetection!!)
-                headTv.text = "Head: $headStatus"
-                shouldersTv.text = "Shoulders: $shoulderStatus"
-                weightTv.text = "Weight: $weightShiftText"
-                feetTv.text = "Feet: $footworkStatus"
+                headTv.text = "$headStatus"
+                shouldersTv.text = "$shoulderStatus"
+                weightTv.text = "$weightShiftText"
+                feetTv.text = "$footworkStatus"
             }
 
             overlay.invalidate()
@@ -730,16 +747,19 @@ class PracticeSession : AppCompatActivity() {
                 val distSq = headHistory.sumOf { (it.first - avgX).pow(2) + (it.second - avgY).pow(2) }
                 val variance = distSq / headHistory.size
 
-                // Heuristic for instability
-                val isInstabilityDetected = variance > 0.0005f // Rough threshold for normalized units
+                // Convert variance to percentage (0.0015f variance is 0% stable)
+                val maxVariance = 0.0015f
+                val headTolerance = 0.0002f // AI jitter deadzone
+                val score = if (variance.toFloat() <= headTolerance) 100f
+                else (100f - ((variance.toFloat() - headTolerance) / (maxVariance - headTolerance)) * 100f).coerceIn(0f, 100f)
 
-                if (isInstabilityDetected) {
-                    headUnstableCount++
-                } else {
-                    headUnstableCount = 0
-                }
+                headBadCount = if (score < 100f) minOf(headBadCount + 1, MAX_PERSISTENCE) else maxOf(headBadCount - 2, 0)
+                val finalScore = if (headBadCount >= PERSISTENCE_FRAMES) score else 100f
 
-                headStatus = if (headUnstableCount >= PERSISTENCE_THRESHOLD) "Not Stable" else "Stable"
+                // Exponential moving average for smoothness
+                headStabilityScore = (headStabilityScore * 0.8f) + (finalScore * 0.2f)
+
+                headStatus = "${headStabilityScore.toInt()}%"
             }
         }
 
@@ -752,27 +772,19 @@ class PracticeSession : AppCompatActivity() {
             val angle = Math.toDegrees(atan2(dy.toDouble(), dx.toDouble())).toFloat()
 
             // Assuming standard pose, shoulders should be roughly level (0 degrees)
-            // If angle > 10, tilted one way. If < -10, tilted the other.
-            when {
-                angle > 12 -> { // Right shoulder lower?
-                    shoulderRightCount++
-                    shoulderLeftCount = 0
-                }
-                angle < -12 -> { // Left shoulder lower?
-                    shoulderLeftCount++
-                    shoulderRightCount = 0
-                }
-                else -> {
-                    shoulderLeftCount = 0
-                    shoulderRightCount = 0
-                }
-            }
+            val maxAngle = 20f
+            val shoulderTolerance = 4f // Allow up to 4 degrees of natural tilt/jitter
+            val targetAngle = abs(angle)
+            val score = if (targetAngle <= shoulderTolerance) 100f
+            else (100f - ((targetAngle - shoulderTolerance) / (maxAngle - shoulderTolerance)) * 100f).coerceIn(0f, 100f)
 
-            shoulderStatus = when {
-                shoulderLeftCount >= PERSISTENCE_THRESHOLD -> "Left"
-                shoulderRightCount >= PERSISTENCE_THRESHOLD -> "Right"
-                else -> "Stable"
-            }
+            shoulderBadCount = if (score < 100f) minOf(shoulderBadCount + 1, MAX_PERSISTENCE) else maxOf(shoulderBadCount - 2, 0)
+            val finalScore = if (shoulderBadCount >= PERSISTENCE_FRAMES) score else 100f
+
+            // Exponential moving average for smoothness
+            shoulderScore = (shoulderScore * 0.8f) + (finalScore * 0.2f)
+
+            shoulderStatus = "${shoulderScore.toInt()}%"
         }
 
         // 3. Weight Distribution (Hips vs Ankles X)
@@ -786,12 +798,19 @@ class PracticeSession : AppCompatActivity() {
             val hipCenter = (lHip.first + rHip.first) / 2
             val ankCenter = (lAnk.first + rAnk.first) / 2
 
-            val diff = hipCenter - ankCenter
-            weightShiftText = when {
-                diff < -0.05f -> "Back"
-                diff > 0.05f -> "Front"
-                else -> "Centered"
-            }
+            val diff = abs(hipCenter - ankCenter)
+            val maxDiff = 0.1f // 10% of frame width difference is 0% centered
+            val weightTolerance = 0.02f // 2% width deadzone for natural stance
+            val score = if (diff <= weightTolerance) 100f
+            else (100f - ((diff - weightTolerance) / (maxDiff - weightTolerance)) * 100f).coerceIn(0f, 100f)
+
+            weightBadCount = if (score < 100f) minOf(weightBadCount + 1, MAX_PERSISTENCE) else maxOf(weightBadCount - 2, 0)
+            val finalScore = if (weightBadCount >= PERSISTENCE_FRAMES) score else 100f
+
+            // Exponential moving average
+            weightScore = (weightScore * 0.8f) + (finalScore * 0.2f)
+
+            weightShiftText = "${weightScore.toInt()}%"
         }
 
         // 4. Footwork (Ankle movement)
@@ -800,7 +819,17 @@ class PracticeSession : AppCompatActivity() {
 
             if (lastFootPosition != null) {
                 val dist = sqrt((currentFeet.first - lastFootPosition!!.first).pow(2) + (currentFeet.second - lastFootPosition!!.second).pow(2))
-                footworkStatus = if (dist > 0.015f) "Adjusting" else "Planted"
+                val maxDist = 0.05f
+                val footTolerance = 0.005f // Ignore micro-pixel bounding box jitter
+                val score = if (dist.toFloat() <= footTolerance) 100f
+                else (100f - ((dist.toFloat() - footTolerance) / (maxDist - footTolerance)) * 100f).coerceIn(0f, 100f)
+
+                footworkBadCount = if (score < 100f) minOf(footworkBadCount + 1, MAX_PERSISTENCE) else maxOf(footworkBadCount - 2, 0)
+                val finalScore = if (footworkBadCount >= PERSISTENCE_FRAMES) score else 100f
+
+                // Fast recovery, slow trail for footwork
+                footworkScore = (footworkScore * 0.7f) + (finalScore * 0.3f)
+                footworkStatus = "${footworkScore.toInt()}%"
             }
             lastFootPosition = currentFeet
         }
@@ -809,22 +838,26 @@ class PracticeSession : AppCompatActivity() {
     private fun resetAnalysisState() {
         headHistory.clear()
         headStabilityScore = 100f
-        weightShiftText = "neutral"
-        shoulderStatus = "Stable"
-        headStatus = "Stable"
-        footworkStatus = "Planted"
+        shoulderScore = 100f
+        weightScore = 100f
+        footworkScore = 100f
+        weightShiftText = "100%"
+        shoulderStatus = "100%"
+        headStatus = "100%"
+        footworkStatus = "100%"
         lastFootPosition = null
 
-        headUnstableCount = 0
-        shoulderLeftCount = 0
-        shoulderRightCount = 0
+        headBadCount = 0
+        shoulderBadCount = 0
+        weightBadCount = 0
+        footworkBadCount = 0
 
         // Reset UI text immediately
         runOnUiThread {
-            headTv.text = "Head: --"
-            shouldersTv.text = "Shoulders: --"
-            weightTv.text = "Weight: --"
-            feetTv.text = "Feet: --"
+            headTv.text = "--"
+            shouldersTv.text = "--"
+            weightTv.text = " --"
+            feetTv.text = "--"
         }
     }
 

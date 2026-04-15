@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.speech.RecognitionListener
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
@@ -37,119 +38,160 @@ import org.json.JSONObject
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale as JavaLocale
 import java.util.concurrent.TimeUnit
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.view.GravityCompat
+import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 
 class AICoachingChat : AppCompatActivity() {
     private lateinit var binding: ActivityAicoachingChatBinding
+    
+    private val auth by lazy { FirebaseAuth.getInstance() }
+    private val db by lazy { FirebaseFirestore.getInstance() }
 
     // ------------------------------------------------------------------------
     // SETUP
     // ------------------------------------------------------------------------
-    // FIXED: Load from BuildConfig (secure, no hardcode)
     private val apiKey: String = BuildConfig.GEMINI_API_KEY
-    // FIXED: Correct model name (hyphen, no space) + upgrade to 2.5 for better perf
-    private val modelName = "gemini-2.5-flash"  // Or "gemini-1.5-flash" if quota limits
-    // OkHttp Client
+    private val modelName = "gemini-2.5-flash"
     private val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .build()
     private val JSON_MEDIA_TYPE = "application/json; charset=utf-8".toMediaType()
 
-    // Chat History to maintain context (A "Proper Chatbot")
     private val chatHistory = JSONArray()
 
-
-    // FIXED: STT/TTS Setup
     private var speechRecognizer: SpeechRecognizer? = null
     private var textToSpeech: TextToSpeech? = null
     private var isListening = false
-    private val REQUEST_RECORD_AUDIO = 1001  // Perm request code
+    private val REQUEST_RECORD_AUDIO = 1001
 
     // ------------------------------------------------------------------------
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Initialize view binding
         binding = ActivityAicoachingChatBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // FIXED: Validate API key early
         if (apiKey.isEmpty()) {
-            Log.e("AICoachingChat", "API Key is empty! Check local.properties and build.gradle.")
-            addBotResponse("Coach setup error: API key missing. Check app settings.", isInitial = true)
-            return
-        } else {
-            Log.d("AICoachingChat", "API Key loaded successfully (length: ${apiKey.length})")
+            Log.e("AICoachingChat", "API Key is empty!")
+            addBotResponse("Coach setup error: API key missing.", isInitial = true)
         }
 
-        // FIXED: List available models on launch (one-time debug)
-        listAvailableModels()
-
-        // Setup UI components
+        setupToolbarAndDrawer()
         setupBottomNavigation()
-        setupMenuButton()
         setupSendButton()
-        setupVoiceInput()  // NEW: Voice setup
+        setupVoiceInput()
 
-        // FIXED: Initialize history with system prompt for consistent coaching persona
         initializeChatHistory()
+        loadUserData()
 
-        // Add the initial welcome message
         addBotResponse("Hello! 👋 I'm your AI Cricket Coach. Ask me how to improve your batting, timing, or technique!", isInitial = true)
     }
 
-    // FIXED: Add system prompt to history for all sessions
+    private fun setupToolbarAndDrawer() {
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        val toggle = ActionBarDrawerToggle(
+            this,
+            binding.drawerLayout,
+            binding.toolbar,
+            R.string.navigation_drawer_open,
+            R.string.navigation_drawer_close
+        )
+
+        binding.drawerLayout.addDrawerListener(toggle)
+        toggle.syncState()
+
+        binding.navView.setNavigationItemSelectedListener { menuItem ->
+            handleDrawerNavigation(menuItem)
+            true
+        }
+    }
+
+    private fun handleDrawerNavigation(menuItem: MenuItem) {
+        when (menuItem.itemId) {
+            R.id.nav_dashboard -> {
+                startActivity(Intent(this, Dashboard::class.java))
+                finish()
+            }
+            R.id.nav_practice -> {
+                startActivity(Intent(this, PracticeSession::class.java))
+                finish()
+            }
+            R.id.nav_progress -> {
+                startActivity(Intent(this, Progress::class.java))
+                finish()
+            }
+            R.id.nav_tips -> {
+                startActivity(Intent(this, TipsForYou::class.java))
+                finish()
+            }
+            R.id.AI -> {
+                // Already here
+            }
+            R.id.profile -> startActivity(Intent(this, EditProfileActivity::class.java))
+            R.id.notification -> startActivity(Intent(this, NotificationActivity::class.java))
+            R.id.session_history -> startActivity(Intent(this, SessionHistory::class.java))
+            R.id.settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.signout -> startActivity(Intent(this, SignOutConfirmationActivity::class.java))
+        }
+        binding.drawerLayout.closeDrawer(GravityCompat.START)
+    }
+
+    private fun loadUserData() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val user = document.toObject(User::class.java)
+                    user?.let {
+                        val headerView = binding.navView.getHeaderView(0)
+                        val headerProfileImage = headerView.findViewById<android.widget.ImageView>(R.id.profile_image)
+                        val headerUserName = headerView.findViewById<TextView>(R.id.user_name)
+                        val headerUserEmail = headerView.findViewById<TextView>(R.id.user_email)
+                        val headerUserAge = headerView.findViewById<TextView>(R.id.user_age)
+                        val headerUserExperience = headerView.findViewById<TextView>(R.id.user_experience)
+                        
+                        headerUserName.text = it.fullName ?: "Player"
+                        headerUserEmail.text = it.email ?: auth.currentUser?.email
+                        headerUserAge.text = ProfileUtils.calculateAge(it.dob)
+                        headerUserExperience.text = it.experienceLevel ?: "Experience: N/A"
+
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, headerProfileImage, R.drawable.img_21)
+                    }
+                }
+            }
+    }
+
     private fun initializeChatHistory() {
-        val systemPrompt = "You are an expert, friendly, and encouraging cricket batting coach named 'AI Cricket Coach'. Keep answers concise (under 150 words), actionable, and focused on technique improvement. Use emojis sparingly for engagement. End with a question to continue the conversation."
+        val systemPrompt = "You are an expert, friendly, and encouraging cricket batting coach named 'AI Cricket Coach'. Keep answers concise (under 150 words), actionable, and focused on technique improvement."
         val sysEntry = JSONObject().apply {
-            put("role", "user")  // Gemini treats system as first "user" for context
+            put("role", "user")
             put("parts", JSONArray().put(JSONObject().put("text", systemPrompt)))
         }
         chatHistory.put(sysEntry)
     }
 
-    // FIXED: Debug: List available models on launch
-    private fun listAvailableModels() {
-        CoroutineScope(Dispatchers.IO).launch {
-            val listUrl = "https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey"
-            val request = Request.Builder().url(listUrl).build()
-            client.newCall(request).enqueue(object : Callback {
-                override fun onResponse(call: Call, response: Response) {
-                    if (response.isSuccessful) {
-                        val modelsList = response.body?.string() ?: ""
-                        Log.d("AICoachingChat", "Available Models: $modelsList")  // Check for "gemini-2.5-flash" or "gemini-1.5-flash"
-                    } else {
-                        Log.e("AICoachingChat", "List Models Failed: ${response.code} - ${response.body?.string()}")
-                    }
-                }
-                override fun onFailure(call: Call, e: IOException) {
-                    Log.e("AICoachingChat", "List Models Network Error: ${e.message}")
-                }
-            })
-        }
-    }
-
-    // --- Core Chat Logic ---
     private fun setupSendButton() {
         binding.btnSend.setOnClickListener {
             val message = binding.inputMessage.text.toString().trim()
             if (message.isNotEmpty()) {
-                // 1. Add user message to UI
                 addUserMessage(message)
-                // 2. Clear input
                 binding.inputMessage.setText("")
-                // 3. Show loading & get response
                 showLoading()
                 getAIResponseHTTP(message)
             }
         }
     }
 
-    // FIXED: Full setup (add as new function)
     private fun setupVoiceInput() {
-        // Request RECORD_AUDIO perm
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.RECORD_AUDIO), REQUEST_RECORD_AUDIO)
         } else {
@@ -157,7 +199,6 @@ class AICoachingChat : AppCompatActivity() {
             initTextToSpeech()
         }
 
-        // Mic button listener (add btnMic to XML if not)
         binding.btnMic.setOnClickListener {
             if (!isListening) startListening() else stopListening()
         }
@@ -165,48 +206,32 @@ class AICoachingChat : AppCompatActivity() {
 
     private fun initSpeechRecognizer() {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
-        val recognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak your cricket question...")
-            putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
-        }
-        speechRecognizer?.setRecognitionListener(object : RecognitionListener {  // FIXED: Full impl
+        speechRecognizer?.setRecognitionListener(object : RecognitionListener {
             override fun onReadyForSpeech(params: Bundle?) {
                 isListening = true
-                Toast.makeText(this@AICoachingChat, "Listening...", Toast.LENGTH_SHORT).show()  // FIXED: Import Toast
+                Toast.makeText(this@AICoachingChat, "Listening...", Toast.LENGTH_SHORT).show()
             }
-
             override fun onBeginningOfSpeech() {}
-
             override fun onRmsChanged(rmsdB: Float) {}
-
-            override fun onBufferReceived(buffer: ByteArray?) {}  // FIXED: Impl abstract method
-
+            override fun onBufferReceived(buffer: ByteArray?) {}
             override fun onEndOfSpeech() {}
-
             override fun onError(error: Int) {
-                Log.e("STT", "Error $error")
                 isListening = false
-                binding.btnMic.setImageResource(R.drawable.mic)  // Reset icon
+                binding.btnMic.setImageResource(R.drawable.mic)
             }
-
             override fun onResults(results: Bundle?) {
                 val matches = results?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 matches?.firstOrNull()?.let { transcript ->
                     binding.inputMessage.setText(transcript)
-                    binding.btnSend.performClick()  // Auto-send
+                    binding.btnSend.performClick()
                 }
                 isListening = false
                 binding.btnMic.setImageResource(R.drawable.mic)
             }
-
             override fun onPartialResults(partialResults: Bundle?) {
-                // Optional: Live update EditText
                 val partial = partialResults?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 partial?.firstOrNull()?.let { binding.inputMessage.setText(it) }
             }
-
             override fun onEvent(eventType: Int, params: Bundle?) {}
         })
     }
@@ -214,20 +239,17 @@ class AICoachingChat : AppCompatActivity() {
     private fun initTextToSpeech() {
         textToSpeech = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                textToSpeech?.setLanguage(Locale.getDefault())
-                textToSpeech?.setPitch(1.0f)
-                textToSpeech?.setSpeechRate(0.9f)
+                textToSpeech?.setLanguage(JavaLocale.getDefault())
             }
         }
     }
 
     private fun startListening() {
         isListening = true
-        binding.btnMic.setImageResource(R.drawable.stop)  // Assume stop icon
-        speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {  // FIXED: Intent wrapper
+        binding.btnMic.setImageResource(R.drawable.stop)
+        speechRecognizer?.startListening(Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak your cricket question...")
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, JavaLocale.getDefault())
         })
     }
 
@@ -237,133 +259,84 @@ class AICoachingChat : AppCompatActivity() {
         binding.btnMic.setImageResource(R.drawable.mic)
     }
 
-    // FIXED: Speak after bot response (add this in addBotResponse, after scrollToBottom())
     private fun speakResponse(text: String) {
         textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "coach_${System.currentTimeMillis()}")
     }
 
-
     private fun getAIResponseHTTP(userMessage: String) {
-        // FIXED: Quick key check before API call
         if (apiKey.isEmpty()) {
-            // You are already on the Main thread here, so just call the UI methods directly
             hideLoading()
-            addBotResponse("Coach offline: API key issue. Restart app?")
+            addBotResponse("Coach offline: API key issue.")
             return
         }
 
-        // ... rest of the function ...
-
-
-
-        // Run network request on background thread
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // 1. Add User Message to History
                 val userEntry = JSONObject().apply {
                     put("role", "user")
                     put("parts", JSONArray().put(JSONObject().put("text", userMessage)))
                 }
                 chatHistory.put(userEntry)
 
-                // 2. Make Request
                 val responseText = makeGeminiRequest()
 
-                // 3. Add Model Response to History (so it remembers for next time)
                 val modelEntry = JSONObject().apply {
                     put("role", "model")
                     put("parts", JSONArray().put(JSONObject().put("text", responseText)))
                 }
                 chatHistory.put(modelEntry)
 
-                // 4. Update UI
                 withContext(Dispatchers.Main) {
                     hideLoading()
                     addBotResponse(responseText)
                 }
             } catch (e: Exception) {
-                Log.e("AICoachingChat", "HTTP Error", e)
-                // Remove the last user message from history so we can try again cleanly
-                if (chatHistory.length() > 0) {
-                    chatHistory.remove(chatHistory.length() - 1)
-                }
+                if (chatHistory.length() > 0) chatHistory.remove(chatHistory.length() - 1)
                 withContext(Dispatchers.Main) {
                     hideLoading()
-                    // FIXED: Better error with retry option
-                    val errorMsg = "Oops! Couldn't connect to the coach. (${e.message})\nTap to retry?"
-                    addBotResponse(errorMsg)
+                    addBotResponse("Oops! Couldn't connect to the coach.")
                 }
             }
         }
     }
 
-    // FIXED: Enhanced API Request with trim + logging to catch spaces
     private fun makeGeminiRequest(): String {
-        // FIXED: Trim any spaces from modelName
-        val cleanModelName = modelName.trim { it <= ' ' }  // Removes leading/trailing spaces
+        val cleanModelName = modelName.trim()
         val url = "https://generativelanguage.googleapis.com/v1beta/models/$cleanModelName:generateContent?key=$apiKey"
-        Log.d("AICoachingChat", "Full API URL: $url")  // FIXED: Log to verify no space (e.g., ...gemini-2.5-flash...)
-
-        // FIXED: Add generation_config for max tokens & temperature (concise, focused coaching)
+        
         val generationConfig = JSONObject().apply {
             put("temperature", 0.7)
             put("maxOutputTokens", 150)
-            put("topP", 0.8)
-            put("topK", 40)
         }
 
-        // Construct Request Body
         val jsonBody = JSONObject()
         jsonBody.put("contents", chatHistory)
 
-        // System Instruction
-        val systemPrompt = "You are an expert, friendly, and encouraging cricket batting coach named 'AI Cricket Coach'. Keep answers concise and under 150 words."
+        val systemPrompt = "You are an expert, friendly, and encouraging cricket batting coach. Keep answers concise."
         val sysInstruction = JSONObject().apply {
             put("parts", JSONArray().put(JSONObject().put("text", systemPrompt)))
         }
         jsonBody.put("systemInstruction", sysInstruction)
         jsonBody.put("generationConfig", generationConfig)
 
-        Log.d("AICoachingChat", "Request Body: ${jsonBody.toString().take(500)}...")
-
         val requestBody = jsonBody.toString().toRequestBody(JSON_MEDIA_TYPE)
-        val request = Request.Builder()
-            .url(url)
-            .post(requestBody)
-            .build()
+        val request = Request.Builder().url(url).post(requestBody).build()
 
         client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                val errorBody = response.body?.string() ?: ""
-                Log.e("AICoachingChat", "API Error ${response.code}: $errorBody")
-                val errorMsg = try {
-                    val jsonError = JSONObject(errorBody).getJSONObject("error")
-                    "${jsonError.getString("status")} (Code ${jsonError.getInt("code")}): ${jsonError.getString("message")}"
-                } catch (e: Exception) {
-                    "Server Error ${response.code}: $errorBody"
-                }
-                throw IOException(errorMsg)
-            }
-
-            val responseBody = response.body?.string() ?: throw IOException("Empty Response Body")
-            Log.d("AICoachingChat", "Full Response: $responseBody")  // FIXED: Log full for debug
-
+            if (!response.isSuccessful) throw IOException("API Error ${response.code}")
+            val responseBody = response.body?.string() ?: throw IOException("Empty Response")
             val jsonResponse = JSONObject(responseBody)
             val candidates = jsonResponse.optJSONArray("candidates")
             if (candidates != null && candidates.length() > 0) {
-                val firstCandidate = candidates.getJSONObject(0)
-                val contentObj = firstCandidate.optJSONObject("content")
-                val parts = contentObj?.optJSONArray("parts")
+                val parts = candidates.getJSONObject(0).optJSONObject("content")?.optJSONArray("parts")
                 if (parts != null && parts.length() > 0) {
-                    val text = parts.getJSONObject(0).optString("text", "")
-                    if (text.isNotEmpty()) return text
+                    return parts.getJSONObject(0).optString("text", "")
                 }
             }
-            return "I'm listening, but let's try that again! What cricket tip do you need?"
+            return "I'm listening, but let's try that again!"
         }
     }
 
-    // FIXED: Added loading state for real-time feel
     private fun showLoading() {
         val loadingView = createMessageView("Typing...", false, isInitial = true)
         binding.chatContainer.addView(loadingView)
@@ -371,7 +344,6 @@ class AICoachingChat : AppCompatActivity() {
     }
 
     private fun hideLoading() {
-        // Remove last view if it's loading
         if (binding.chatContainer.childCount > 0) {
             val lastChild = binding.chatContainer.getChildAt(binding.chatContainer.childCount - 1)
             if (lastChild is LinearLayout && lastChild.findViewById<TextView>(R.id.text_message_body)?.text == "Typing...") {
@@ -380,7 +352,6 @@ class AICoachingChat : AppCompatActivity() {
         }
     }
 
-    // --- Dynamic Message UI Creation (Enhanced with Timestamps) ---
     private fun addUserMessage(message: String) {
         val userMessageView = createMessageView(message, true)
         binding.chatContainer.addView(userMessageView)
@@ -391,7 +362,7 @@ class AICoachingChat : AppCompatActivity() {
         val botMessageView = createMessageView(response, false, isInitial)
         binding.chatContainer.addView(botMessageView)
         scrollToBottom()
-        if (!isInitial) speakResponse(response)  // NEW: Auto-speak
+        if (!isInitial) speakResponse(response)
     }
 
     private fun createMessageView(message: String, isUser: Boolean, isInitial: Boolean = false): View {
@@ -401,19 +372,12 @@ class AICoachingChat : AppCompatActivity() {
         val textBody = messageLayout.findViewById<TextView>(R.id.text_message_body)
         textBody.text = message
 
-        // FIXED: Add timestamp (assume timestamp_view in layouts)
-        val timestampView = messageLayout.findViewById<TextView>(R.id.timestamp)  // Add to XML if missing
+        val timestampView = messageLayout.findViewById<TextView>(R.id.timestamp)
         if (timestampView != null) {
-            val timeFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-            timestampView.text = timeFormat.format(Date())
+            timestampView.text = SimpleDateFormat("HH:mm", JavaLocale.getDefault()).format(Date())
             timestampView.visibility = View.VISIBLE
         }
 
-        if (!isInitial && binding.chatContainer.childCount > 0) {
-            val layoutParams = messageLayout.layoutParams as LinearLayout.LayoutParams
-            layoutParams.topMargin = resources.getDimensionPixelSize(R.dimen.chat_message_margin)  // Define in dimens.xml if missing (e.g., 16dp)
-            messageLayout.layoutParams = layoutParams
-        }
         return messageLayout
     }
 
@@ -423,7 +387,6 @@ class AICoachingChat : AppCompatActivity() {
         }
     }
 
-    // --- Navigation (Unchanged) ---
     private fun setupBottomNavigation() {
         binding.btnDashboard.setOnClickListener {
             startActivity(Intent(this, Dashboard::class.java))
@@ -443,24 +406,19 @@ class AICoachingChat : AppCompatActivity() {
         }
     }
 
-
-    private fun setupMenuButton() {
-        binding.btnMenu.setOnClickListener {
-            // Menu Logic (e.g., open drawer)
-        }
-    }
-
-
-
-    // FIXED: Add this as override (class level)
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_RECORD_AUDIO && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             initSpeechRecognizer()
             initTextToSpeech()
-            Toast.makeText(this, "Mic ready—tap to speak!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onBackPressed() {
+        if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            binding.drawerLayout.closeDrawer(GravityCompat.START)
         } else {
-            Toast.makeText(this, "Mic permission needed for voice chat!", Toast.LENGTH_LONG).show()
+            super.onBackPressed()
         }
     }
 }

@@ -1,54 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@drawable/bg_menu_gradient">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <group android:checkableBehavior="single">
+    <item android:title="Main Navigation">
+        <menu>
+            <item
+                android:id="@+id/nav_dashboard"
+                android:icon="@drawable/img_11"
+                android:title="Dashboard" />
+            <item
+                android:id="@+id/nav_practice"
+                android:icon="@drawable/img_12"
+                android:title="Practice Session" />
+            <item
+                android:id="@+id/nav_progress"
+                android:icon="@drawable/img_13"
+                android:title="Progress Tracker" />
+            <item
+                android:id="@+id/nav_tips"
+                android:icon="@drawable/img_14"
+                android:title="AI Tips &amp; Advice" />
+            <item
+                android:id="@+id/AI"
+                android:icon="@drawable/chat_bubble"
+                android:title="AI Coaching Chat" />
+        </menu>
+    </item>
 
-        <item
-            android:id="@+id/profile"
-            android:title="Profile"
-            android:icon="@drawable/user"
-            android:titleCondensed="Profile" />
+    <item android:title="Account &amp; History">
+        <menu>
+            <item
+                android:id="@+id/profile"
+                android:icon="@drawable/user"
+                android:title="My Profile" />
+            <item
+                android:id="@+id/session_history"
+                android:icon="@drawable/history"
+                android:title="Session History" />
+            <item
+                android:id="@+id/notification"
+                android:icon="@drawable/notification"
+                android:title="Notifications" />
+            <item
+                android:id="@+id/settings"
+                android:icon="@drawable/setting"
+                android:title="Settings" />
+        </menu>
+    </item>
 
-        <item
-            android:id="@+id/notification"
-            android:title="Notification"
-            android:icon="@drawable/notification"
-            android:titleCondensed="Notification" />
-
-        <item
-            android:id="@+id/session_history"
-            android:title="Session History"
-            android:icon="@drawable/history"
-            android:titleCondensed="Session History" />
-
-        <item
-            android:id="@+id/AI"
-            android:title="AI Coaching Chat"
-            android:icon="@drawable/chat_bubble"
-            android:titleCondensed="AI Coaching Chat" />
-
-        <item
-            android:id="@+id/settings"
-            android:title="Settings"
-            android:icon="@drawable/setting"
-            android:titleCondensed="Settings" />
-
-    </group>
-
-    <!-- Spacer -->
-    <item
-        android:id="@+id/spacer"
-        android:title=""
-        android:enabled="false" />
-
-    <!-- Sign Out Section -->
-    <group>
+    <group android:id="@+id/menu_bottom">
         <item
             android:id="@+id/signout"
             android:icon="@drawable/img_20"
-            android:title="Sign Out"
-            android:titleCondensed="Sign Out" />
+            android:title="Sign Out" />
     </group>
 
 </menu>

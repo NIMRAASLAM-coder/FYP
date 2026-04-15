@@ -39,6 +39,8 @@ class Dashboard : AppCompatActivity() {
     private lateinit var headerProfileImage: ImageView
     private lateinit var headerUserName: TextView
     private lateinit var headerUserEmail: TextView
+    private lateinit var headerUserAge: TextView
+    private lateinit var headerUserExperience: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -91,8 +93,10 @@ class Dashboard : AppCompatActivity() {
         // Navigation drawer header views
         val headerView = navigationView.getHeaderView(0)
         headerProfileImage = headerView.findViewById(R.id.profile_image)
-        headerUserName = headerView.findViewById(R.id.user_name)
-        headerUserEmail = headerView.findViewById(R.id.user_email)
+        headerUserName = headerView.findViewById<TextView>(R.id.user_name)
+        headerUserEmail = headerView.findViewById<TextView>(R.id.user_email)
+        headerUserAge = headerView.findViewById<TextView>(R.id.user_age)
+        headerUserExperience = headerView.findViewById<TextView>(R.id.user_experience)
     }
 
     private fun loadUserData() {
@@ -110,8 +114,12 @@ class Dashboard : AppCompatActivity() {
                         welcomeText.text = "Welcome $displayName!"
                         headerUserName.text = displayName
                         headerUserEmail.text = it.email ?: currentUser.email
+                        
+                        // Calculate Age and show Experience
+                        headerUserAge.text = ProfileUtils.calculateAge(it.dob)
+                        headerUserExperience.text = it.experienceLevel ?: "Experience: N/A"
 
-                        // Load Profile Image using the new Utility
+                        // Load Profile Image using Utility
                         ProfileUtils.loadProfileImage(this, it.profileImageUrl, topProfileImage, R.drawable.img_7)
                         ProfileUtils.loadProfileImage(this, it.profileImageUrl, headerProfileImage, R.drawable.img_21)
                     }
@@ -152,7 +160,7 @@ class Dashboard : AppCompatActivity() {
 
         // Bottom navigation click listeners
         navDashboard.setOnClickListener {
-            // Already on dashboard, maybe refresh or scroll to top
+            // Already on dashboard
             highlightBottomNavItem(navDashboard)
         }
 
@@ -178,48 +186,27 @@ class Dashboard : AppCompatActivity() {
     private fun navigateToPractice() {
         val intent = Intent(this, PracticeSession::class.java)
         startActivity(intent)
+        finish()
     }
 
     private fun navigateToProgress() {
         val intent = Intent(this, Progress::class.java)
         startActivity(intent)
+        finish()
     }
 
     private fun navigateToTips() {
         val intent = Intent(this, TipsForYou::class.java)
         startActivity(intent)
+        finish()
     }
 
     private fun handleDrawerNavigation(menuItem: MenuItem) {
         when (menuItem.itemId) {
-            // Side drawer menu items (from main_menu.xml)
-            R.id.profile -> {
-                val intent = Intent(this, EditProfileActivity::class.java)
-                startActivity(intent)
+            R.id.nav_dashboard -> {
+                // Already here
+                highlightBottomNavItem(navDashboard)
             }
-            R.id.notification -> {
-                val intent = Intent(this, NotificationActivity::class.java)
-                startActivity(intent)
-            }
-            R.id.session_history -> {
-                val intent = Intent(this, SessionHistory::class.java)
-                startActivity(intent)
-            }
-            R.id.AI -> {
-                 val intent = Intent(this, AICoachingChat::class.java)
-                 startActivity(intent)
-            }
-            R.id.settings -> {
-                val intent = Intent(this, SettingsActivity::class.java)
-                startActivity(intent)
-            }
-            R.id.signout -> {
-                startActivity(Intent(this, SignOutConfirmationActivity::class.java))
-                drawerLayout.closeDrawer(androidx.core.view.GravityCompat.START)
-                true
-            }
-
-            // Bottom navigation items
             R.id.nav_practice -> {
                 navigateToPractice()
             }
@@ -229,6 +216,26 @@ class Dashboard : AppCompatActivity() {
             R.id.nav_tips -> {
                 navigateToTips()
             }
+            R.id.AI -> {
+                 val intent = Intent(this, AICoachingChat::class.java)
+                 startActivity(intent)
+                 finish()
+            }
+            R.id.profile -> {
+                startActivity(Intent(this, EditProfileActivity::class.java))
+            }
+            R.id.notification -> {
+                startActivity(Intent(this, NotificationActivity::class.java))
+            }
+            R.id.session_history -> {
+                startActivity(Intent(this, SessionHistory::class.java))
+            }
+            R.id.settings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
+            }
+            R.id.signout -> {
+                startActivity(Intent(this, SignOutConfirmationActivity::class.java))
+            }
         }
 
         // Close the drawer after navigation
@@ -236,20 +243,23 @@ class Dashboard : AppCompatActivity() {
     }
 
     private fun highlightBottomNavItem(selectedView: View) {
-        // Reset all items to normal state
         listOf(navDashboard, navPractice, navProgress, navTips).forEach { view ->
-            view.alpha = 0.6f
-            // Find TextView in the layout and set normal style
+            view.isActivated = (view == selectedView)
             val textView = (view as? android.view.ViewGroup)?.getChildAt(1) as? android.widget.TextView
-            textView?.textSize = 12f
-            textView?.setTypeface(null, android.graphics.Typeface.NORMAL)
+            val imageView = (view as? android.view.ViewGroup)?.getChildAt(0) as? android.widget.ImageView
+            
+            if (view == selectedView) {
+                textView?.setTypeface(null, android.graphics.Typeface.BOLD)
+                textView?.setTextColor(getColor(R.color.white))
+                imageView?.setColorFilter(getColor(R.color.white))
+            } else {
+                textView?.setTypeface(null, android.graphics.Typeface.NORMAL)
+                textView?.setTextColor(getColor(R.color.white))
+                textView?.alpha = 0.7f
+                imageView?.setColorFilter(getColor(R.color.white))
+                imageView?.alpha = 0.7f
+            }
         }
-
-        // Highlight selected item
-        selectedView.alpha = 1f
-        val selectedTextView = (selectedView as? android.view.ViewGroup)?.getChildAt(1) as? android.widget.TextView
-        selectedTextView?.textSize = 12f
-        selectedTextView?.setTypeface(null, android.graphics.Typeface.BOLD)
     }
 
     override fun onResume() {

@@ -39,7 +39,7 @@
                     android:layout_width="48dp"
                     android:layout_height="48dp"
                     android:contentDescription="Menu"
-                    app:navigationIcon="@drawable/ic_menu" />
+                    app:navigationIcon="@drawable/hamburger" />
 
                 <TextView
                     android:layout_width="0dp"

@@ -2,7 +2,10 @@ package com.fyp.nextshot
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
+import android.view.MenuItem
 import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -58,15 +61,13 @@ class Progress : AppCompatActivity() {
     private lateinit var avgScoreProgressBar: ProgressBar
     private lateinit var bestScoreProgressBar: ProgressBar
     private lateinit var avgAccuracyProgressBar: ProgressBar
+    private lateinit var topProfileImage: ImageView
 
     // Bottom navigation
     private lateinit var navDashboard: LinearLayout
     private lateinit var navPractice: LinearLayout
     private lateinit var navProgress: LinearLayout
     private lateinit var navTips: LinearLayout
-
-    // Recent Sessions UI
-    private lateinit var recentSessionsList: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,8 +79,12 @@ class Progress : AppCompatActivity() {
         setupBottomNavigation()
         setupBackPressHandler()
 
-        // Fetch data from Cloud
+        // Highlight current page
+        highlightBottomNavItem(navProgress)
+
+        // Fetch data
         fetchSessionsFromCloud()
+        loadUserData()
     }
 
     private fun initializeViews() {
@@ -101,15 +106,41 @@ class Progress : AppCompatActivity() {
         avgScoreProgressBar = findViewById(R.id.avg_score_progress_bar)
         bestScoreProgressBar = findViewById(R.id.best_score_progress_bar)
         avgAccuracyProgressBar = findViewById(R.id.avg_accuracy_progress_bar)
-
-        // Recent Sessions Container
-        recentSessionsList = findViewById(R.id.recent_sessions_list)
+        topProfileImage = findViewById(R.id.profile_image)
 
         // Bottom nav
-        navDashboard = findViewById(R.id.dash)
-        navPractice = findViewById(R.id.practice)
-        navProgress = findViewById(R.id.progress)
-        navTips = findViewById(R.id.tips)
+        navDashboard = findViewById(R.id.nav_dashboard)
+        navPractice = findViewById(R.id.nav_practice)
+        navProgress = findViewById(R.id.nav_progress)
+        navTips = findViewById(R.id.nav_tips)
+    }
+
+    private fun loadUserData() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val user = document.toObject(User::class.java)
+                    user?.let {
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, topProfileImage, R.drawable.img_7)
+                        
+                        // Load into Drawer Header
+                        val headerView = navigationView.getHeaderView(0)
+                        val headerProfileImage = headerView.findViewById<ImageView>(R.id.profile_image)
+                        val headerUserName = headerView.findViewById<TextView>(R.id.user_name)
+                        val headerUserEmail = headerView.findViewById<TextView>(R.id.user_email)
+                        val headerUserAge = headerView.findViewById<TextView>(R.id.user_age)
+                        val headerUserExperience = headerView.findViewById<TextView>(R.id.user_experience)
+                        
+                        headerUserName.text = it.fullName ?: "Player"
+                        headerUserEmail.text = it.email ?: auth.currentUser?.email
+                        headerUserAge.text = ProfileUtils.calculateAge(it.dob)
+                        headerUserExperience.text = it.experienceLevel ?: "Experience: N/A"
+
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, headerProfileImage, R.drawable.img_21)
+                    }
+                }
+            }
     }
 
     private fun fetchSessionsFromCloud() {
@@ -162,16 +193,15 @@ class Progress : AppCompatActivity() {
     }
 
     private fun displayRecentSessions(recentSessions: List<SessionEntity>) {
+        val recentSessionsList = findViewById<LinearLayout>(R.id.recent_sessions_list) ?: return
         recentSessionsList.removeAllViews()
 
         val dateFormat = SimpleDateFormat("EEE, MMM d, yyyy", Locale.getDefault())
         val inflater = layoutInflater
 
         recentSessions.forEachIndexed { index, session ->
-            // Use correct layout: item_session.xml
             val sessionView = inflater.inflate(R.layout.item_session, recentSessionsList, false)
 
-            // Find Views using correct IDs from item_session.xml
             val sessionTitle = sessionView.findViewById<TextView>(R.id.session_title)
             val sessionDate = sessionView.findViewById<TextView>(R.id.session_date)
             val sessionScore = sessionView.findViewById<TextView>(R.id.session_score)
@@ -181,11 +211,9 @@ class Progress : AppCompatActivity() {
             val analysisSummaryLayout = sessionView.findViewById<LinearLayout>(R.id.analysis_summary_layout)
             val tvAnalysisDetails = sessionView.findViewById<TextView>(R.id.tv_analysis_details)
 
-            // Calculate values
             val accuracyVal = (session.successRate * 100).roundToInt()
             val durationMinutes = session.durationSeconds / 60
 
-            // Bind data
             sessionTitle.text = "Session #${index + 1}: ${session.drillType}"
             sessionDate.text = dateFormat.format(Date(session.dateMillis))
             sessionScore.text = accuracyVal.toString()
@@ -193,7 +221,6 @@ class Progress : AppCompatActivity() {
             sessionDuration.text = durationMinutes.toString()
             sessionShots.text = "N/A"
 
-            // Bind Analysis Details
             if (session.drillType == "Pose Analysis" && session.flawDetails != null) {
                 analysisSummaryLayout.visibility = View.VISIBLE
                 tvAnalysisDetails.text = session.flawDetails
@@ -220,21 +247,56 @@ class Progress : AppCompatActivity() {
         drawerLayout.addDrawerListener(toggle)
         toggle.syncState()
 
-        navigationView.setNavigationItemSelectedListener {
-            drawerLayout.closeDrawer(GravityCompat.START)
+        navigationView.setNavigationItemSelectedListener { menuItem ->
+            handleDrawerNavigation(menuItem)
             true
         }
+        
+        topProfileImage.setOnClickListener {
+            startActivity(Intent(this, EditProfileActivity::class.java))
+        }
+    }
+
+    private fun handleDrawerNavigation(menuItem: MenuItem) {
+        when (menuItem.itemId) {
+            R.id.nav_dashboard -> {
+                startActivity(Intent(this, Dashboard::class.java))
+                finish()
+            }
+            R.id.nav_practice -> {
+                startActivity(Intent(this, PracticeSession::class.java))
+                finish()
+            }
+            R.id.nav_progress -> {
+                // Already here
+            }
+            R.id.nav_tips -> {
+                startActivity(Intent(this, TipsForYou::class.java))
+                finish()
+            }
+            R.id.profile -> startActivity(Intent(this, EditProfileActivity::class.java))
+            R.id.notification -> startActivity(Intent(this, NotificationActivity::class.java))
+            R.id.session_history -> startActivity(Intent(this, SessionHistory::class.java))
+            R.id.AI -> startActivity(Intent(this, AICoachingChat::class.java))
+            R.id.settings -> startActivity(Intent(this, SettingsActivity::class.java))
+            R.id.signout -> startActivity(Intent(this, SignOutConfirmationActivity::class.java))
+        }
+        drawerLayout.closeDrawer(GravityCompat.START)
     }
 
     private fun setupTabNavigation() {
         tabPerformance.setOnClickListener {
             startActivity(Intent(this, PerformanceTracking::class.java))
+            finish()
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
         tabFlaws.setOnClickListener {
             startActivity(Intent(this, FlawsTracking::class.java))
+            finish()
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
         }
         tabOverview.setOnClickListener {
-            fetchSessionsFromCloud()
+            // Already here
         }
     }
 
@@ -249,10 +311,33 @@ class Progress : AppCompatActivity() {
         }
         navProgress.setOnClickListener {
             // Already here
+            highlightBottomNavItem(navProgress)
         }
         navTips.setOnClickListener {
             startActivity(Intent(this, TipsForYou::class.java))
             finish()
+        }
+    }
+
+    private fun highlightBottomNavItem(selectedView: View) {
+        listOf(navDashboard, navPractice, navProgress, navTips).forEach { view ->
+            view.isActivated = (view == selectedView)
+            val textView = (view as? android.view.ViewGroup)?.getChildAt(1) as? android.widget.TextView
+            val imageView = (view as? android.view.ViewGroup)?.getChildAt(0) as? android.widget.ImageView
+            
+            if (view == selectedView) {
+                textView?.setTypeface(null, android.graphics.Typeface.BOLD)
+                textView?.setTextColor(getColor(R.color.white))
+                imageView?.setColorFilter(getColor(R.color.white))
+                textView?.alpha = 1f
+                imageView?.alpha = 1f
+            } else {
+                textView?.setTypeface(null, android.graphics.Typeface.NORMAL)
+                textView?.setTextColor(getColor(R.color.white))
+                textView?.alpha = 0.7f
+                imageView?.setColorFilter(getColor(R.color.white))
+                imageView?.alpha = 0.7f
+            }
         }
     }
 
@@ -272,5 +357,6 @@ class Progress : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         fetchSessionsFromCloud()
+        loadUserData()
     }
 }

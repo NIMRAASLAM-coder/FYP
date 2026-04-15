@@ -2,8 +2,11 @@ package com.fyp.nextshot
 
 import android.content.Context
 import android.util.Base64
+import android.util.Log
 import android.widget.ImageView
 import com.bumptech.glide.Glide
+import java.text.SimpleDateFormat
+import java.util.*
 
 object ProfileUtils {
     fun loadProfileImage(context: Context, imageData: String?, imageView: ImageView, placeholder: Int) {
@@ -38,6 +41,30 @@ object ProfileUtils {
             }
         } catch (e: Exception) {
             imageView.setImageResource(placeholder)
+        }
+    }
+
+    fun calculateAge(dobString: String?): String {
+        if (dobString.isNullOrEmpty()) return "Age: N/A"
+        
+        return try {
+            val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+            val dob = sdf.parse(dobString) ?: return "Age: N/A"
+            
+            val dobCalendar = Calendar.getInstance()
+            dobCalendar.time = dob
+            
+            val today = Calendar.getInstance()
+            
+            var age = today.get(Calendar.YEAR) - dobCalendar.get(Calendar.YEAR)
+            
+            if (today.get(Calendar.DAY_OF_YEAR) < dobCalendar.get(Calendar.DAY_OF_YEAR)) {
+                age--
+            }
+            
+            "Age: $age years"
+        } catch (e: Exception) {
+            "Age: N/A"
         }
     }
 }

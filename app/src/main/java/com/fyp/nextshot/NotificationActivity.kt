@@ -6,6 +6,7 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -14,11 +15,17 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 
 class NotificationActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var navigationView: NavigationView
     private lateinit var toolbar: Toolbar
+    private lateinit var topProfileImage: ImageView
+
+    private val auth by lazy { FirebaseAuth.getInstance() }
+    private val db by lazy { FirebaseFirestore.getInstance() }
 
     // Bottom navigation
     private lateinit var navDashboard: View
@@ -54,12 +61,18 @@ class NotificationActivity : AppCompatActivity() {
         setupToolbarAndDrawer()
         setupBottomNavigation()
         setupNotificationActions()
+        loadUserData()
+        
+        topProfileImage.setOnClickListener {
+            startActivity(Intent(this, EditProfileActivity::class.java))
+        }
     }
 
     private fun initializeViews() {
         drawerLayout = findViewById(R.id.drawer_layout)
         navigationView = findViewById(R.id.nav_view)
         toolbar = findViewById(R.id.menu)
+        topProfileImage = findViewById(R.id.profile_image)
 
         // Bottom navigation
         navDashboard = findViewById(R.id.nav_dashboard)
@@ -106,25 +119,48 @@ class NotificationActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadUserData() {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("users").document(uid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val user = document.toObject(User::class.java)
+                    user?.let {
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, topProfileImage, R.drawable.img_7)
+                        
+                        // Load into Drawer Header
+                        val headerView = navigationView.getHeaderView(0)
+                        val headerProfileImage = headerView.findViewById<ImageView>(R.id.profile_image)
+                        val headerUserName = headerView.findViewById<TextView>(R.id.user_name)
+                        val headerUserEmail = headerView.findViewById<TextView>(R.id.user_email)
+                        
+                        headerUserName.text = it.fullName ?: "Player"
+                        headerUserEmail.text = it.email ?: auth.currentUser?.email
+                        ProfileUtils.loadProfileImage(this, it.profileImageUrl, headerProfileImage, R.drawable.img_21)
+                    }
+                }
+            }
+    }
+
     private fun setupBottomNavigation() {
         navDashboard.setOnClickListener {
-            val intent = Intent(this, Dashboard::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, Dashboard::class.java))
+            finish()
         }
 
         navPractice.setOnClickListener {
-            val intent = Intent(this, PracticeSession::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, PracticeSession::class.java))
+            finish()
         }
 
         navProgress.setOnClickListener {
-            val intent = Intent(this, Progress::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, Progress::class.java))
+            finish()
         }
 
         navTips.setOnClickListener {
-            val intent = Intent(this, TipsForYou::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, TipsForYou::class.java))
+            finish()
         }
     }
 
@@ -185,7 +221,7 @@ class NotificationActivity : AppCompatActivity() {
     }
 
     private fun checkEmptyState() {
-        if (visibleNotificationsCount == 0) {
+        if (visibleNotificationsCount <= 0) {
             emptyState.visibility = View.VISIBLE
             emptyState.alpha = 0f
             emptyState.animate()
@@ -197,52 +233,49 @@ class NotificationActivity : AppCompatActivity() {
 
     private fun handleDrawerNavigation(menuItem: MenuItem) {
         when (menuItem.itemId) {
+            R.id.nav_dashboard -> {
+                startActivity(Intent(this, Dashboard::class.java))
+                finish()
+            }
+            R.id.nav_practice -> {
+                startActivity(Intent(this, PracticeSession::class.java))
+                finish()
+            }
+            R.id.nav_progress -> {
+                startActivity(Intent(this, Progress::class.java))
+                finish()
+            }
+            R.id.nav_tips -> {
+                startActivity(Intent(this, TipsForYou::class.java))
+                finish()
+            }
             R.id.profile -> {
-                val intent = Intent(this, EditProfileActivity::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, EditProfileActivity::class.java))
             }
             R.id.notification -> {
-                // Already on notification screen, do nothing
+                // Already here
             }
             R.id.session_history -> {
-                val intent = Intent(this, SessionHistory::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, SessionHistory::class.java))
             }
             R.id.AI -> {
-                val intent = Intent(this, AICoachingChat::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, AICoachingChat::class.java))
             }
             R.id.settings -> {
-                val intent = Intent(this, SettingsActivity::class.java)
-                startActivity(intent)
+                startActivity(Intent(this, SettingsActivity::class.java))
             }
             R.id.signout -> {
-                performSignOut()
+                startActivity(Intent(this, SignOutConfirmationActivity::class.java))
             }
         }
-
-        // Close the drawer after navigation
         drawerLayout.closeDrawer(GravityCompat.START)
     }
 
-    private fun performSignOut() {
-        androidx.appcompat.app.AlertDialog.Builder(this)
-            .setTitle("Sign Out")
-            .setMessage("Are you sure you want to sign out?")
-            .setPositiveButton("Yes") { _, _ ->
-                // Clear user session
-                val sharedPreferences = getSharedPreferences("UserSession", MODE_PRIVATE)
-                sharedPreferences.edit().clear().apply()
-
-                // Navigate to SignIn
-                val intent = Intent(this, SignIn::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
-                finish()
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
+    override fun onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START)) {
+            drawerLayout.closeDrawer(GravityCompat.START)
+        } else {
+            super.onBackPressed()
+        }
     }
-
-
 }
