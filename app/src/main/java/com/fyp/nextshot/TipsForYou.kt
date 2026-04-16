@@ -9,11 +9,20 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.fyp.nextshot.data.local.database.AppDatabase
+import com.fyp.nextshot.data.repository.TipsRepository
+import com.fyp.nextshot.ui.viewmodel.TipsViewModel
+import com.fyp.nextshot.ui.viewmodel.TipsViewModelFactory
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -33,6 +42,23 @@ class TipsForYou : AppCompatActivity() {
     private lateinit var navProgress: View
     private lateinit var navTips: View
 
+    // Dynamic Tips components
+    private lateinit var tipsRecyclerView: RecyclerView
+    private lateinit var loadingState: LinearLayout
+    private lateinit var emptyState: LinearLayout
+    private lateinit var fabRefresh: FloatingActionButton
+    private lateinit var tipAdapter: DynamicTipAdapter
+
+    // ViewModel setup (same pattern as SessionHistory)
+    private val userId by lazy { auth.currentUser?.uid ?: "FALLBACK_UID" }
+    private val database by lazy { AppDatabase.getDatabase(applicationContext) }
+    private val tipsRepository by lazy {
+        TipsRepository(database.aiTipDao(), database.sessionDao(), userId, db)
+    }
+    private val tipsViewModel: TipsViewModel by viewModels {
+        TipsViewModelFactory(tipsRepository)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tips_for_you)
@@ -42,7 +68,15 @@ class TipsForYou : AppCompatActivity() {
         topProfileImage = findViewById(R.id.profile_image)
         toolbar = findViewById(R.id.menu)
         
+        // Dynamic tips views
+        tipsRecyclerView = findViewById(R.id.tips_recycler_view)
+        loadingState = findViewById(R.id.loading_state)
+        emptyState = findViewById(R.id.empty_state)
+        fabRefresh = findViewById(R.id.fab_refresh_tips)
+
         setupToolbarAndDrawer()
+        setupRecyclerView()
+        setupObservers()
 
         // Button to go to TipsForAll
         val nextButton = findViewById<Button>(R.id.tab_all_tips)
@@ -69,6 +103,81 @@ class TipsForYou : AppCompatActivity() {
         topProfileImage.setOnClickListener {
             startActivity(Intent(this, EditProfileActivity::class.java))
         }
+
+        // Refresh button
+        fabRefresh.setOnClickListener {
+            Toast.makeText(this, "Refreshing tips...", Toast.LENGTH_SHORT).show()
+            tipsViewModel.refreshTips()
+        }
+
+        // Auto-generate tips on open
+        tipsViewModel.generateTips()
+    }
+
+    private fun setupRecyclerView() {
+        tipAdapter = DynamicTipAdapter()
+        tipsRecyclerView.apply {
+            layoutManager = LinearLayoutManager(this@TipsForYou)
+            adapter = tipAdapter
+        }
+    }
+
+    private fun setupObservers() {
+        // Observe tips data
+        tipsViewModel.tips.observe(this) { tips ->
+            if (tips.isNullOrEmpty()) {
+                // Only show empty state if NOT loading
+                if (tipsViewModel.isLoading.value != true) {
+                    showEmptyState()
+                }
+            } else {
+                showTips(tips)
+            }
+        }
+
+        // Observe loading state
+        tipsViewModel.isLoading.observe(this) { isLoading ->
+            if (isLoading) {
+                showLoadingState()
+            } else {
+                // Let the tips observer handle showing content or empty state
+                val currentTips = tipsViewModel.tips.value
+                if (currentTips.isNullOrEmpty()) {
+                    showEmptyState()
+                }
+                // If tips exist, tips observer already handled it
+            }
+        }
+
+        // Observe errors
+        tipsViewModel.error.observe(this) { error ->
+            if (error != null) {
+                Toast.makeText(this, error, Toast.LENGTH_LONG).show()
+                Log.e("TipsForYou", "Error: $error")
+            }
+        }
+    }
+
+    private fun showLoadingState() {
+        loadingState.visibility = View.VISIBLE
+        tipsRecyclerView.visibility = View.GONE
+        emptyState.visibility = View.GONE
+        fabRefresh.visibility = View.GONE
+    }
+
+    private fun showTips(tips: List<com.fyp.nextshot.data.local.models.AiTipEntity>) {
+        loadingState.visibility = View.GONE
+        emptyState.visibility = View.GONE
+        tipsRecyclerView.visibility = View.VISIBLE
+        fabRefresh.visibility = View.VISIBLE
+        tipAdapter.submitList(tips)
+    }
+
+    private fun showEmptyState() {
+        loadingState.visibility = View.GONE
+        tipsRecyclerView.visibility = View.GONE
+        emptyState.visibility = View.VISIBLE
+        fabRefresh.visibility = View.VISIBLE
     }
 
     private fun setupToolbarAndDrawer() {

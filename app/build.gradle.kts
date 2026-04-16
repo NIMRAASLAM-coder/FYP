@@ -16,12 +16,18 @@ if (localPropertiesFile.exists()) {
     localProperties.load(FileInputStream(localPropertiesFile))
 }
 val geminiApiKey = localProperties.getProperty("GEMINI_API_KEY") ?: ""
+val groqApiKey = localProperties.getProperty("GROQ_API_KEY") ?: ""
 
-// Sanitize the API key: remove surrounding quotes if the user added them in local.properties
+// Sanitize the API keys: remove surrounding quotes if the user added them
 val sanitizedGeminiApiKey = if (geminiApiKey.startsWith("\"") && geminiApiKey.endsWith("\"")) {
     geminiApiKey.substring(1, geminiApiKey.length - 1)
 } else {
     geminiApiKey
+}
+val sanitizedGroqApiKey = if (groqApiKey.startsWith("\"") && groqApiKey.endsWith("\"")) {
+    groqApiKey.substring(1, groqApiKey.length - 1)
+} else {
+    groqApiKey
 }
 
 android {
@@ -37,8 +43,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         
-        // Define the API Key in BuildConfig
+        // Define the API Keys in BuildConfig
         buildConfigField("String", "GEMINI_API_KEY", "\"$sanitizedGeminiApiKey\"")
+        buildConfigField("String", "GROQ_API_KEY", "\"$sanitizedGroqApiKey\"")
     }
 
     buildTypes {

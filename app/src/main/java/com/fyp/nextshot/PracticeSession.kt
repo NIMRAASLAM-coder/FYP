@@ -29,13 +29,16 @@ import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import androidx.activity.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.fyp.nextshot.data.local.database.AppDatabase
 import com.fyp.nextshot.data.local.models.SessionEntity
 import com.fyp.nextshot.data.repository.SessionRepository
+import com.fyp.nextshot.data.repository.TipsRepository
 import com.fyp.nextshot.ui.viewmodel.SessionViewModel
 import com.fyp.nextshot.ui.viewmodel.SessionViewModelFactory
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.launch
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -883,6 +886,31 @@ class PracticeSession : AppCompatActivity() {
 
         sessionViewModel.insert(session)
         Toast.makeText(this, "Session Saved to History!", Toast.LENGTH_LONG).show()
+
+        // Trigger AI tip generation in background after session save
+        triggerTipGeneration()
+    }
+
+    /**
+     * Triggers AI tip generation in the background after a session is saved.
+     * This ensures tips are ready when the user navigates to the Tips screen.
+     */
+    private fun triggerTipGeneration() {
+        lifecycleScope.launch {
+            try {
+                val tipsRepository = TipsRepository(
+                    database.aiTipDao(),
+                    database.sessionDao(),
+                    userId,
+                    db
+                )
+                tipsRepository.generateTips(forceRefresh = true)
+                Log.d(TAG, "AI tips generated successfully after session save")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to generate AI tips: ${e.message}", e)
+                // Non-critical — don't show error to user
+            }
+        }
     }
 
     private fun ImageProxy.toBitmap(): Bitmap {

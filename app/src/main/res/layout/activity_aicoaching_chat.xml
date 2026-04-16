@@ -15,79 +15,83 @@
         android:background="#F0F4FF"
         android:orientation="vertical">
 
-        <LinearLayout
+        <com.google.android.material.appbar.AppBarLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="16dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:background="@drawable/bg_top_bar_gradient"
-            android:elevation="4dp">
-
-            <androidx.appcompat.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:navigationIcon="@drawable/hamburger"
-                android:contentDescription="Menu" />
+            app:elevation="4dp"
+            android:background="#FFFFFF">
 
             <LinearLayout
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginStart="12dp">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="AI Cricket Coach"
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:textColor="#FFFFFF" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Your Personal Coaching Assistant"
-                    android:textSize="11sp"
-                    android:textColor="#E3F2FD"
-                    android:layout_marginTop="2dp" />
-            </LinearLayout>
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1" />
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:paddingVertical="12dp"
+                android:paddingHorizontal="16dp"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp">
+                android:gravity="center_vertical">
 
-                <View
-                    android:layout_width="8dp"
-                    android:layout_height="8dp"
-                    android:background="#00C853"
-                    android:layout_marginEnd="6dp" />
+                <androidx.appcompat.widget.Toolbar
+                    android:id="@+id/toolbar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    app:navigationIcon="@drawable/hamburger"
+                    app:navigationIconTint="#002B5C"
+                    android:contentDescription="Menu" />
 
-                <TextView
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    app:cardCornerRadius="22dp"
+                    app:cardElevation="0dp"
+                    android:layout_marginStart="8dp"
+                    app:cardBackgroundColor="#E3F2FD">
+                     <ImageView
+                         android:layout_width="24dp"
+                         android:layout_height="24dp"
+                         android:layout_gravity="center"
+                         android:src="@drawable/img_14" 
+                         app:tint="#002B5C"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Online"
-                    android:textColor="#00C853"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
+                    android:orientation="vertical"
+                    android:layout_marginStart="12dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="AI Cricket Coach"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="#002B5C" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginTop="2dp">
+
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="8dp"
+                            android:layout_height="8dp"
+                            app:cardCornerRadius="4dp"
+                            app:cardBackgroundColor="#00E676"
+                            app:strokeWidth="0dp"
+                            android:layout_marginEnd="6dp"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Online • Always ready"
+                            android:textSize="12sp"
+                            android:textColor="#546E7A" />
+                    </LinearLayout>
+                </LinearLayout>
+
             </LinearLayout>
-
-        </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#E0E7FF" />
+        </com.google.android.material.appbar.AppBarLayout>
 
         <ScrollView
             android:id="@+id/scrollView"
@@ -108,53 +112,71 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="12dp"
-            android:background="#FFFFFF"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:elevation="4dp">
+            android:gravity="bottom"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="12dp"
+            android:background="#F0F4FF">
 
-            <EditText
-                android:id="@+id/inputMessage"
+            <com.google.android.material.card.MaterialCardView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minHeight="48dp"
                 android:layout_weight="1"
-                android:hint="Ask me about cricket techniques..."
-                android:background="@drawable/bg_input_field"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="12dp"
-                android:textColorHint="#B0BEC5"
-                android:textColor="#002B5C"
-                android:textSize="14sp"
-                android:maxLines="3"
-                android:inputType="textCapSentences|textMultiLine" />
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="#FFFFFF">
 
-            <ImageView
-                android:id="@+id/btnMic"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:src="@drawable/mic"
-                android:layout_marginStart="8dp"
-                android:padding="10dp"
-                android:contentDescription="Speak"
-                android:background="@drawable/bg_send_button"
-                android:clickable="true"
-                android:focusable="true"
-                app:tint="#FFFFFF" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:minHeight="48dp">
 
-            <ImageView
+                    <ImageView
+                        android:id="@+id/btnMic"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:src="@drawable/mic"
+                        android:padding="11dp"
+                        android:layout_marginStart="4dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"
+                        app:tint="#546E7A" />
+
+                    <EditText
+                        android:id="@+id/inputMessage"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Ask me anything..."
+                        android:background="@null"
+                        android:paddingHorizontal="4dp"
+                        android:paddingVertical="12dp"
+                        android:textColorHint="#90A4AE"
+                        android:textColor="#002B5C"
+                        android:textSize="15sp"
+                        android:maxLines="4"
+                        android:inputType="textCapSentences|textMultiLine" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
                 android:id="@+id/btnSend"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:src="@drawable/ic_send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:padding="10dp"
-                android:contentDescription="Send"
-                android:background="@drawable/bg_send_button"
-                android:clickable="true"
-                android:focusable="true"
-                app:tint="#FFFFFF" />
+                android:layout_marginBottom="1dp"
+                android:src="@drawable/ic_send"
+                app:tint="#FFFFFF"
+                app:backgroundTint="#002B5C"
+                app:fabCustomSize="46dp"
+                app:maxImageSize="22dp"
+                app:elevation="2dp"
+                android:contentDescription="Send" />
+
         </LinearLayout>
 
         <LinearLayout

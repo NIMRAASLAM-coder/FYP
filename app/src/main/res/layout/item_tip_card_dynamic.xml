@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="2dp"
+    app:strokeColor="@color/words_blue"
+    app:cardBackgroundColor="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <ImageView
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@android:drawable/ic_dialog_info"
+                app:tint="@color/words_blue"
+                android:layout_marginEnd="8dp" />
+
+            <TextView
+                android:id="@+id/tip_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Your Performance Review"
+                android:textColor="@color/words_blue"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E0E0E0"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Description with bullet points -->
+        <TextView
+            android:id="@+id/tip_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Detailed feedback description based on your latest session."
+            android:textColor="#333333"
+            android:textSize="14sp"
+            android:lineSpacingExtra="5dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Tag Chip -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_tag_1"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="Performance Review"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                app:chipBackgroundColor="@color/words_blue"
+                app:chipCornerRadius="8dp"
+                app:chipStrokeWidth="0dp"
+                app:chipIcon="@android:drawable/ic_menu_view"
+                app:chipIconTint="@color/white"
+                app:chipIconSize="16dp"
+                app:ensureMinTouchTargetSize="false" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
