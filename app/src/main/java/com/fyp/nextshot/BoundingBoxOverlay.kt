@@ -28,14 +28,26 @@ class BoundingBoxOverlay : View {
     }
 
     private var detections: List<Detection> = emptyList()
+    private var shotTypeLabel: String = ""
+
+    fun setShotType(label: String) {
+        shotTypeLabel = label
+        invalidate()
+    }
 
     fun setDetections(newDetections: List<Detection>) {
         detections = newDetections
         invalidate()
     }
-
+    /** Sets detections + shot type together and redraws exactly once. */
+    fun update(newDetections: List<Detection>, shotType: String) {
+        detections = newDetections
+        shotTypeLabel = shotType
+        invalidate()
+    }
     fun clear() {
         detections = emptyList()
+        shotTypeLabel = ""
         invalidate()
     }
 
@@ -66,22 +78,30 @@ class BoundingBoxOverlay : View {
         style = Paint.Style.FILL
     }
 
+    private val shotTypeBgPaint = Paint().apply {
+        color = Color.argb(210, 255, 140, 0)
+        style = Paint.Style.FILL
+        isAntiAlias = true
+    }
+
+    private val shotTypeTextPaint = Paint().apply {
+        color = Color.WHITE
+        textSize = 38f
+        isFakeBoldText = true
+        isAntiAlias = true
+        setShadowLayer(4f, 0f, 0f, Color.BLACK)
+    }
+
     private val skeleton = listOf(
-        // Nose to eyes
         0 to 1, 0 to 2,
-        // Eyes to ears
         1 to 3, 2 to 4,
-        // Shoulders
         5 to 6,
-        // Arms
-        5 to 7, 7 to 9,       // left: shoulder → elbow → wrist
-        6 to 8, 8 to 10,      // right: shoulder → elbow → wrist
-        // Torso
-        5 to 11, 6 to 12,     // shoulders to hips
+        5 to 7, 7 to 9,
+        6 to 8, 8 to 10,
+        5 to 11, 6 to 12,
         11 to 12,
-        // Legs
-        11 to 13, 13 to 15,    // left: hip → knee → ankle
-        12 to 14, 14 to 16     // right: hip → knee → ankle
+        11 to 13, 13 to 15,
+        12 to 14, 14 to 16
     )
 
     override fun onDraw(canvas: Canvas) {
@@ -93,15 +113,28 @@ class BoundingBoxOverlay : View {
         val offsetY = (height - imageHeight * scale) / 2f
 
         for (det in detections) {
-            val left = det.bbox.left * imageWidth * scale + offsetX
-            val top = det.bbox.top * imageHeight * scale + offsetY
-            val right = det.bbox.right * imageWidth * scale + offsetX
+            val left   = det.bbox.left   * imageWidth  * scale + offsetX
+            val top    = det.bbox.top    * imageHeight * scale + offsetY
+            val right  = det.bbox.right  * imageWidth  * scale + offsetX
             val bottom = det.bbox.bottom * imageHeight * scale + offsetY
 
             canvas.drawRect(left, top, right, bottom, boxPaint)
 
-            val text = "${det.label.uppercase()} ${(det.confidence * 100).toInt()}%"
-            canvas.drawText(text, left + 20, top + 60, textPaint)
+            val confText = "${det.label.uppercase()} ${(det.confidence * 100).toInt()}%"
+            canvas.drawText(confText, left + 20, top + 60, textPaint)
+
+            // Shot type badge — drawn above the bounding box
+            if (shotTypeLabel.isNotEmpty()) {
+                val padding = 14f
+                val textW = shotTypeTextPaint.measureText(shotTypeLabel)
+                val badgeLeft   = left
+                val badgeRight  = left + textW + padding * 2
+                val badgeBottom = (top - 6f).coerceAtLeast(offsetY + 52f)
+                val badgeTop    = (badgeBottom - 52f).coerceAtLeast(offsetY)
+                val badgeRect   = RectF(badgeLeft, badgeTop, badgeRight, badgeBottom)
+                canvas.drawRoundRect(badgeRect, 12f, 12f, shotTypeBgPaint)
+                canvas.drawText(shotTypeLabel, badgeLeft + padding, badgeBottom - 12f, shotTypeTextPaint)
+            }
 
             // Draw keypoints
             det.keypoints.forEach { kp ->
