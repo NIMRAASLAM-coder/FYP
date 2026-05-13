@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/bg_hud_strip.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#1AFFFFFF" />
+    <stroke
+        android:width="0.5dp"
+        android:color="#33FFFFFF" />
+    <corners android:radius="12dp" />
+</shape>

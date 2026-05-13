@@ -108,13 +108,22 @@
         <activity
             android:name=".SignIn"
             android:exported="false" />
+        <!-- Add this BEFORE your MainActivity entry -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <!-- Your existing MainActivity — REMOVE its intent-filter -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false">
+            <!-- No intent-filter here anymore -->
         </activity>
 
 

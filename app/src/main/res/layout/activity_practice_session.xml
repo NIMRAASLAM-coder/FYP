@@ -4,21 +4,83 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:background="@color/background_blue">
+    android:fitsSystemWindows="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@drawable/gradient_background">
 
-        <!-- Video Player + Overlay (hidden until video is selected) -->
+        <!-- ══════════════════════════════════════
+             TOP HEADER CARD
+        ══════════════════════════════════════ -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/top_bar_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@android:color/white"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="14dp"
+                android:gravity="center_vertical"
+                android:background="@drawable/gradient_header">
+
+                <!-- Menu Icon -->
+                <ImageView
+                    android:id="@+id/btn_menu"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_menu"
+                    app:tint="#1565C0"
+                    android:contentDescription="Menu"
+                    android:padding="2dp" />
+
+                <!-- Title -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="Practice Session"
+                    android:textColor="#0D47A1"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:gravity="center"
+                    android:letterSpacing="0.01" />
+
+                <!-- Profile Icon -->
+                <ImageView
+                    android:id="@+id/btn_profile"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/ic_profile"
+                    app:tint="#1565C0"
+                    android:contentDescription="Profile"
+                    android:padding="2dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ══════════════════════════════════════
+             VIDEO PLAYER (hidden until video selected)
+        ══════════════════════════════════════ -->
         <FrameLayout
             android:id="@+id/video_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:visibility="gone"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="@id/top_bar_card">
+            android:background="@android:color/black"
+            app:layout_constraintTop_toBottomOf="@id/top_bar_card"
+            app:layout_constraintBottom_toTopOf="@id/bottom_panel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <VideoView
                 android:id="@+id/video_view"
@@ -31,217 +93,476 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
 
+            <!-- ── HUD Analysis Strip (Video mode) ── -->
+            <LinearLayout
+                android:id="@+id/hud_strip_video"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginTop="10dp"
+                android:layout_marginHorizontal="10dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_hud_strip"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="12dp"
+                android:elevation="6dp">
+
+                <!-- Head -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="HEAD"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tv_head_stability_video"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#5BE0A0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="0.5dp"
+                    android:layout_height="28dp"
+                    android:background="#33FFFFFF" />
+
+                <!-- Shoulders -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SHOULDERS"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tv_shoulders_video"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#5BE0A0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="0.5dp"
+                    android:layout_height="28dp"
+                    android:background="#33FFFFFF" />
+
+                <!-- Weight -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="WEIGHT"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tv_weight_balance_video"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#5BE0A0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="0.5dp"
+                    android:layout_height="28dp"
+                    android:background="#33FFFFFF" />
+
+                <!-- Footwork -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="FOOTWORK"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tv_footwork_video"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#5BE0A0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
             <!-- Play/Pause Button Overlay -->
             <ImageView
                 android:id="@+id/btn_play_pause"
-                android:layout_width="80dp"
-                android:layout_height="80dp"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
                 android:layout_gravity="center"
                 android:src="@android:drawable/ic_media_play"
                 android:background="@drawable/circle_white_transparent"
-                android:padding="20dp"
-                android:elevation="8dp" />
+                android:padding="18dp"
+                android:elevation="8dp"
+                android:visibility="gone" />
         </FrameLayout>
 
-        <!-- Camera Preview (only shown when no video) -->
+        <!-- ══════════════════════════════════════
+             CAMERA PREVIEW (shown when no video)
+        ══════════════════════════════════════ -->
         <FrameLayout
             android:id="@+id/camera_container"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toTopOf="@id/bottom_panel">
+            android:layout_height="0dp"
+            app:layout_constraintTop_toBottomOf="@id/top_bar_card"
+            app:layout_constraintBottom_toTopOf="@id/bottom_panel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <androidx.camera.view.PreviewView
                 android:id="@+id/preview_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:scaleType="fitCenter" />
+                app:scaleType="fitCenter"
+                android:background="@android:color/black" />
 
             <com.fyp.nextshot.BoundingBoxOverlay
                 android:id="@+id/bbox_overlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-            />
+
+            <!-- ── HUD Analysis Strip (Camera/Live mode) ── -->
+            <LinearLayout
+                android:id="@+id/hud_strip_camera"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginTop="10dp"
+                android:layout_marginHorizontal="10dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_hud_strip"
+                android:paddingVertical="8dp"
+                android:paddingHorizontal="12dp"
+                android:elevation="6dp">
+
+                <!-- Head -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="HEAD"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tv_head_stability"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#5BE0A0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="0.5dp"
+                    android:layout_height="28dp"
+                    android:background="#33FFFFFF" />
+
+                <!-- Shoulders -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="SHOULDERS"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tv_shoulders"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#5BE0A0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="0.5dp"
+                    android:layout_height="28dp"
+                    android:background="#33FFFFFF" />
+
+                <!-- Weight -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="WEIGHT"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tv_weight_balance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#5BE0A0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+
+                <!-- Divider -->
+                <View
+                    android:layout_width="0.5dp"
+                    android:layout_height="28dp"
+                    android:background="#33FFFFFF" />
+
+                <!-- Footwork -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="FOOTWORK"
+                        android:textColor="#80FFFFFF"
+                        android:textSize="9sp"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.06" />
+
+                    <TextView
+                        android:id="@+id/tv_footwork"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100%"
+                        android:textColor="#5BE0A0"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- LIVE Recording Badge (bottom-left of HUD) -->
+            <LinearLayout
+                android:id="@+id/recording_indicator"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_marginTop="58dp"
+                android:layout_marginStart="10dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:background="@drawable/bg_recording_indicator"
+                android:visibility="gone">
+
+                <View
+                    android:layout_width="6dp"
+                    android:layout_height="6dp"
+                    android:background="@drawable/circle_recording_red"
+                    android:layout_marginEnd="6dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="LIVE"
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.08" />
+            </LinearLayout>
         </FrameLayout>
 
-        <!-- Analysis Panel (shown in both modes) -->
+        <!-- ══════════════════════════════════════
+             BOTTOM CONTROL PANEL
+        ══════════════════════════════════════ -->
         <androidx.cardview.widget.CardView
             android:id="@+id/bottom_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="16dp"
+            android:layout_margin="12dp"
             app:cardCornerRadius="20dp"
-            app:cardElevation="12dp"
-            app:cardBackgroundColor="#CC004E89"
-            app:layout_constraintBottom_toBottomOf="parent">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="20dp">
-
-                <!-- TextViews moved to top right -->
-
-                <!-- Buttons Row -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginTop="20dp"
-                    android:gravity="center">
-
-                    <Button
-                        android:id="@+id/btn_upload_video"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="56dp"
-                        android:text="UPLOAD"
-                        android:textStyle="bold"
-                        android:backgroundTint="#FF6200EE"
-                        app:cornerRadius="28dp" />
-
-                    <Space
-                        android:layout_width="16dp"
-                        android:layout_height="wrap_content" />
-
-                    <Button
-                        android:id="@+id/btn_live_record"
-                        android:layout_width="0dp"
-                        android:layout_weight="1"
-                        android:layout_height="56dp"
-                        android:text="LIVE"
-                        android:textStyle="bold"
-                        android:backgroundTint="#FF0000"
-                        app:cornerRadius="28dp" />
-                </LinearLayout>
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- Top Bar (your existing one) -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/top_bar_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="16dp"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="8dp"
-            app:cardBackgroundColor="@color/white"
-            app:layout_constraintTop_toTopOf="parent"
+            app:cardElevation="14dp"
+            app:cardBackgroundColor="@android:color/white"
+            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="16dp"
-                android:gravity="center_vertical">
-
-                <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_menu"
-                    app:tint="@color/words_blue" />
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:layout_height="wrap_content"
-                    android:text="Practice Session"
-                    android:textColor="@color/words_blue"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:gravity="center" />
-
-                <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/ic_profile"
-                    app:tint="@color/words_blue" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-        <!-- New Analysis Results Box (Top Right) -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/analysis_card"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="16dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="8dp"
-            app:cardBackgroundColor="#E6F2FF"
-            app:layout_constraintTop_toBottomOf="@id/top_bar_card"
-            app:layout_constraintEnd_toEndOf="parent">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="16dp"
+                android:background="@drawable/gradient_bottom_panel">
 
+                <!-- Mode Label -->
                 <TextView
-                    android:id="@+id/tv_head_stability"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Head: --"
-                    android:textColor="#004E89"
-                    android:textSize="14sp"
+                    android:text="Choose your mode"
+                    android:textColor="#90AAD4"
+                    android:textSize="11sp"
                     android:textStyle="bold"
-                    android:layout_marginBottom="4dp" />
+                    android:letterSpacing="0.04"
+                    android:layout_marginBottom="12dp" />
 
-                <TextView
-                    android:id="@+id/tv_shoulders"
-                    android:layout_width="wrap_content"
+                <!-- Upload + Live Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Shoulders: --"
-                    android:textColor="#004E89"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="4dp" />
+                    android:orientation="horizontal"
+                    android:baselineAligned="false"
+                    android:layout_marginBottom="10dp">
 
-                <TextView
-                    android:id="@+id/tv_weight_balance"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Weight: --"
-                    android:textColor="#004E89"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="4dp" />
+                    <Button
+                        android:id="@+id/btn_upload_video"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="6dp"
+                        android:text="Upload"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:textColor="#1565C0"
+                        android:backgroundTint="#E8F1FC"
+                        android:letterSpacing="0.02"
+                        app:cornerRadius="12dp" />
 
-                <TextView
-                    android:id="@+id/tv_footwork"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Feet: --"
-                    android:textColor="#004E89"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
+                    <Button
+                        android:id="@+id/btn_live_record"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="6dp"
+                        android:text="Live"
+                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:textColor="@android:color/white"
+                        android:backgroundTint="#1565C0"
+                        android:letterSpacing="0.02"
+                        app:cornerRadius="12dp" />
+                </LinearLayout>
 
+                <!-- Save Session Button -->
                 <Button
                     android:id="@+id/btn_save_session"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:text="Save Session"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1565C0"
+                    android:backgroundTint="@android:color/transparent"
+                    android:strokeColor="#1565C0"
+                    android:strokeWidth="1"
+                    android:letterSpacing="0.03"
+                    app:cornerRadius="10dp" />
+
+                <!-- Subtitle -->
+                <TextView
                     android:layout_width="wrap_content"
-                    android:layout_height="36dp"
-                    android:text="SAVE SESSION"
+                    android:layout_height="wrap_content"
+                    android:text="Upload a video or start live analysis"
+                    android:textColor="#B0C4DE"
                     android:textSize="10sp"
-                    android:paddingHorizontal="8dp"
-                    android:backgroundTint="#004E89"
-                    app:cornerRadius="8dp" />
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:layout_gravity="center_horizontal" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Navigation Drawer -->
+    <!-- ══════════════════════════════════════
+         NAVIGATION DRAWER
+    ══════════════════════════════════════ -->
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav_view"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="@color/white"
+        android:background="@android:color/white"
         app:headerLayout="@layout/header"
         app:menu="@menu/main_menu" />
 

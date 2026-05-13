@@ -159,6 +159,7 @@ dependencies {
     implementation("androidx.camera:camera-video:1.3.4")
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
+    implementation("com.google.mediapipe:tasks-vision:0.10.14")
 
 //
 //    implementation("androidx.camera:camera-core:1.1.0")

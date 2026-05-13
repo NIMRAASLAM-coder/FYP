@@ -229,7 +229,7 @@
                 android:id="@+id/tv_analysis_details"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Head: Stable | Shoulders: Stable | Weight: Centered | Feet: Planted"
+                android:text="Head: 100% | Shoulders: 100% | Weight: 100% | Feet: 100%"
                 android:textColor="@android:color/darker_gray"
                 android:textSize="12sp" />
         </LinearLayout>
